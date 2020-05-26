@@ -1,0 +1,55 @@
+{
+  "compilerOptions": {
+    "baseUrl": "./",
+    "declaration": true,
+    "emitDecoratorMetadata": true,
+    "experimentalDecorators": true,
+    "incremental": true,
+    "module": "commonjs",
+    "noImplicitAny": true,
+    "noImplicitReturns": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "outDir": "./dist",
+    "paths": {
+      "@app/*": [
+        "src/*"
+      ],
+      "@config": [
+        "src/config/index"
+      ],
+      "@enum": [
+        "src/enum/index"
+      ],
+      "@exception": [
+        "src/exception/index"
+      ],
+      "@filter": [
+        "src/filter/index"
+      ],
+      "@interceptor": [
+        "src/interceptor/index"
+      ],
+      "@interface": [
+        "src/interface/index"
+      ],
+      "@middleware": [
+        "src/middleware/index"
+      ],
+      "@routes/*": [
+        "src/routes/*"
+      ],
+      "@util": [
+        "src/util/index"
+      ],
+    },
+    "removeComments": true,
+    "sourceMap": true,
+    "strictNullChecks": true,
+    "target": "es2017"
+  },
+  "exclude": [
+    "node_modules",
+    "dist"
+  ],
+}
