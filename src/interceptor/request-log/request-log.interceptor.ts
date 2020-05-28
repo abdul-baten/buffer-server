@@ -1,5 +1,5 @@
 import * as httpContext from 'express-http-context';
-import { CONTEXT } from '@enum';
+import { E_CONTEXT } from '@enum';
 import { Observable } from 'rxjs';
 import {
   CallHandler,
@@ -14,9 +14,9 @@ export class RequestLogInterceptor implements NestInterceptor {
     executionContext: ExecutionContext,
     next: CallHandler,
   ): Observable<any> {
-    const context = httpContext.get(CONTEXT.REQUEST_LOGGING);
+    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
 
-    httpContext.set(CONTEXT.REQUEST_LOGGING, {
+    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
       ...context,
       controllerMethod: executionContext.getHandler().name,
       controllerName: executionContext.getClass().name,

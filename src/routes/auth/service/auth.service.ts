@@ -1,7 +1,7 @@
 import { catchError, map, switchMap } from 'rxjs/operators';
 import { compareSync } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { ERROR_MESSAGE, ERROR_MESSAGE_MAP } from '@app/enum';
+import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@app/enum';
 import { from, Observable } from 'rxjs';
 import { I_USER } from '@app/interface';
 import { InjectModel } from '@nestjs/mongoose';
@@ -42,20 +42,20 @@ export class AuthService {
           return { user, token };
         } else {
           throw new InternalServerErrorException(
-            ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH),
-            ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH,
+            E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH),
+            E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH,
           );
         }
       } else {
         throw new InternalServerErrorException(
-          ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH),
-          ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH,
+          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH),
+          E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH,
         );
       }
     } catch (err) {
       throw new InternalServerErrorException(
-        ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH),
-        ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH,
+        E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH),
+        E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH,
       );
     }
   }
@@ -66,8 +66,8 @@ export class AuthService {
       return await user.save();
     } catch (err) {
       throw new InternalServerErrorException(
-        ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS),
-        ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS,
+        E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS),
+        E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS,
       );
     }
   }
@@ -86,16 +86,16 @@ export class AuthService {
 
       if (!user) {
         throw new InternalServerErrorException(
-          ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS),
-          ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS,
+          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS),
+          E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS,
         );
       }
 
       return user;
     } catch (error) {
       throw new InternalServerErrorException(
-        ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS),
-        ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS,
+        E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS),
+        E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS,
       );
     }
   }
@@ -114,8 +114,8 @@ export class AuthService {
 
       if (!user) {
         throw new InternalServerErrorException(
-          ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND),
-          ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND,
+          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND),
+          E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND,
         );
       }
 
@@ -129,8 +129,8 @@ export class AuthService {
       return { user, authToken };
     } catch (err) {
       throw new InternalServerErrorException(
-        ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.INTERNAL_SERVER_ERROR),
-        ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
+        E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.INTERNAL_SERVER_ERROR),
+        E_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
       );
     }
   }

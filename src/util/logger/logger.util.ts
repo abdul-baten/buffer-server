@@ -1,7 +1,7 @@
 import * as DailyRotateFile from 'winston-daily-rotate-file';
 import * as httpContext from 'express-http-context';
 import { configuration } from '@app/config';
-import { CONTEXT, E_APP_ENVIRONMENT } from '@enum';
+import { E_CONTEXT, E_APP_ENVIRONMENT } from '@enum';
 import { createLogger, format, transports } from 'winston';
 import { Logger } from '@nestjs/common';
 import appRoot = require('app-root-path');
@@ -12,7 +12,7 @@ export class LoggerUtil extends Logger {
   private static appEnvironment = configuration.default.APP.ENVIRONMENT;
 
   private static formatParams = printf(({ level, message }): string => {
-    const context = httpContext.get(CONTEXT.REQUEST_LOGGING);
+    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
     const logID = context.correlationID ?? 'no-correlation-id-set';
     const timestamp = context.date ?? new Date().toISOString();
 

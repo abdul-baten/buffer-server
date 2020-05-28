@@ -1,44 +1,24 @@
-export enum EPostType {
-  IMAGE = 'image',
-  TEXT = 'text',
-  VIDEO = 'video',
-}
+import { Document } from 'mongoose';
+import { E_POST_STATUS, E_POST_TYPE } from '@app/enum';
+import { I_CONNECTION } from './connection.interface';
 
-export enum EPostStatus {
-  DELETED = 'deleted',
-  PUBLISHED = 'published',
-  SAVED = 'saved',
-  SCHEDULED = 'scheduled',
-}
-
-export interface IPostMedia {
+export interface I_POST_FILE extends Document {
+  _id: string;
   fileMimeType: string;
   fileName: string;
-  fileThumbnailURL: string;
   fileType: string;
   fileURL: string;
 }
 
-export interface IPostConnection {
-  socialAvatar: string;
-  socialId: string;
-  socialName: string;
-  socialType: string;
-  socialURL: string;
-}
-
-export interface IPost {
+export interface I_POST extends Document {
   _id: string;
   postCaption: string;
-  postConnection: IPostConnection[];
+  postConnection: I_CONNECTION[];
   postDate: string;
-  postMedia?: IPostMedia[];
-  postLink?: string;
-  postLocation?: string;
+  postMedia?: I_POST_FILE[];
   postScheduleDate: Date;
-  postStatus: EPostStatus;
+  postStatus: E_POST_STATUS;
   postTime: string;
-  postType: EPostType;
-  postURL: string;
-  userId: string;
+  postType: E_POST_TYPE;
+  userID: string;
 }

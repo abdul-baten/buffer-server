@@ -1,4 +1,4 @@
-import { AddConnectionDTO } from '../dto/add-facebook-page.dto';
+import { AddConnectionDTO } from '../dto/connection.dto';
 import { AuthGuard } from '@app/guards/auth.guard';
 import { ConfigService } from '@nestjs/config';
 import { ConnectionService } from '../service/connection.service';
@@ -26,6 +26,7 @@ import {
   Body,
   HttpCode,
   HttpStatus,
+  Delete,
 } from '@nestjs/common';
 
 @Controller('')
@@ -38,6 +39,7 @@ export class ConnectionController {
 
   @Get('oauth/facebook')
   @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.MOVED_PERMANENTLY)
   async facebookAuth(@Res() response: Response): Promise<any> {
     const url = await this.connectionService.authenticateFacebook();
 
@@ -46,6 +48,7 @@ export class ConnectionController {
 
   @Get('getFBPages')
   @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
   getFBPages(
     @Req() request: Request,
     @Query('code') code: string,
@@ -90,7 +93,17 @@ export class ConnectionController {
 
   @Get('getConnections')
   @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
   getConnections(@Query('userID') userID: string): Observable<I_CONNECTION[]> {
     return this.connectionService.getConnections(userID);
+  }
+
+  @Delete('deleteConnection')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  deleteConnection(
+    @Query('deletedID') deletedID: string,
+  ): Observable<I_CONNECTION> {
+    return this.connectionService.deleteConnection(deletedID);
   }
 }

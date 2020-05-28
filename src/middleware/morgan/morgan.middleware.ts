@@ -2,7 +2,7 @@ import * as httpContext from 'express-http-context';
 import * as morgan from 'morgan';
 import { CommonUtil, LoggerUtil, NetworkUtil } from '@util';
 import { ConfigService } from '@nestjs/config';
-import { CONTEXT } from '@enum';
+import { E_CONTEXT } from '@enum';
 import { INestApplication } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';
@@ -36,7 +36,7 @@ const morganMiddleware = (app: INestApplication) => {
 
     const { url, method, params, query } = request;
 
-    httpContext.set(CONTEXT.REQUEST_LOGGING, {
+    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
       requestMethod: method,
       requestParams: params,
       requestQuery: query,
@@ -53,8 +53,8 @@ const morganMiddleware = (app: INestApplication) => {
     request.headers['Buffer-Correlation-ID'] = correlationID;
     response.setHeader('Buffer-Correlation-ID', correlationID);
 
-    const context = httpContext.get(CONTEXT.REQUEST_LOGGING);
-    httpContext.set(CONTEXT.REQUEST_LOGGING, {
+    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
+    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
       ...context,
       correlationID,
       requestID,
@@ -64,10 +64,10 @@ const morganMiddleware = (app: INestApplication) => {
   });
 
   app.use((request: Request, _response: Response, next: NextFunction): void => {
-    const context = httpContext.get(CONTEXT.REQUEST_LOGGING);
+    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
 
     request.on('end', (): void => {
-      httpContext.set(CONTEXT.REQUEST_LOGGING, {
+      httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
         ...context,
       });
     });
@@ -75,7 +75,7 @@ const morganMiddleware = (app: INestApplication) => {
     // request.on('data', (_: any): void => {});
 
     request.on('error', (_: Error): void => {
-      httpContext.set(CONTEXT.REQUEST_LOGGING, { ...context, isError: true });
+      httpContext.set(E_CONTEXT.REQUEST_LOGGING, { ...context, isError: true });
     });
 
     next();
@@ -85,7 +85,7 @@ const morganMiddleware = (app: INestApplication) => {
     const { headers } = request;
 
     response.on('close', (): void => {
-      const context = httpContext.get(CONTEXT.REQUEST_LOGGING);
+      const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
       const {
         action,
         correlationID,

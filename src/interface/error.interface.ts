@@ -1,7 +1,7 @@
-interface IError {
+interface I_ERROR {
   errorCode: string;
   errorMessage: string;
   statusCode: number;
 }
 
-export { IError };
+export { I_ERROR };

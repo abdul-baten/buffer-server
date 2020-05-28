@@ -1,7 +1,8 @@
-import { AddConnectionDTO } from '../dto/add-facebook-page.dto';
+import { AddConnectionDTO } from '../dto/connection.dto';
 import { catchError, defaultIfEmpty, map, pluck } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
-import { ERROR_MESSAGE, ERROR_MESSAGE_MAP } from '@app/enum';
+import { ConnectionMapper } from '../mapper/connection.mapper';
+import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@app/enum';
 import { from, Observable } from 'rxjs';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
@@ -9,12 +10,11 @@ import { LoggerUtil } from '@app/util';
 import { Model } from 'mongoose';
 import { promisifyAll } from 'bluebird';
 import { SanitizerUtil } from '@app/util/sanitizer/sanitizer.util';
-import { SocialProfileMapper } from '../mapper/connection.mapper';
 import {
   I_CONNECTION,
-  I_FB_AUTH_RESPONSE,
-  IFBPage,
   I_FB_AUTH_ERROR,
+  I_FB_AUTH_RESPONSE,
+  I_FB_PAGE,
 } from '@app/interface';
 
 const Graph = require('fbgraph');
@@ -86,10 +86,10 @@ export class ConnectionService {
     );
   }
 
-  private mapFBPages(response: IFBPage[]): I_CONNECTION[] {
+  private mapFBPages(response: I_FB_PAGE[]): I_CONNECTION[] {
     const pagesList: I_CONNECTION[] = [];
-    response.forEach((page: IFBPage) => {
-      pagesList.push(SocialProfileMapper.fbPageResponseMapper(page));
+    response.forEach((page: I_FB_PAGE) => {
+      pagesList.push(ConnectionMapper.fbPageResponseMapper(page));
     });
     return pagesList;
   }
@@ -100,7 +100,7 @@ export class ConnectionService {
     return pageListObservabe$.pipe(
       map(response => response),
       pluck('data'),
-      map((response: IFBPage[]) => this.mapFBPages(response)),
+      map((response: I_FB_PAGE[]) => this.mapFBPages(response)),
       defaultIfEmpty([]),
       catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
     );
@@ -141,25 +141,47 @@ export class ConnectionService {
     );
   }
 
+  deleteConnection(deletedID: string): Observable<I_CONNECTION> {
+    const deletedConnection$ = from(
+      this.connectionModel
+        .findByIdAndDelete({ _id: deletedID })
+        .lean()
+        .exec(),
+    );
+
+    return deletedConnection$.pipe(
+      map((connection: I_CONNECTION) =>
+        SanitizerUtil.sanitizedResponse(connection),
+      ),
+      map((connection: I_CONNECTION) => connection),
+      catchError(() => {
+        throw new InternalServerErrorException(
+          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.CONNECTION_DELETE_ERROR),
+          E_ERROR_MESSAGE.CONNECTION_DELETE_ERROR,
+        );
+      }),
+    );
+  }
+
   catchFBError(error: I_FB_AUTH_ERROR): Observable<any> {
     LoggerUtil.logError(JSON.stringify(error));
     switch (error.code) {
       case 100:
         throw new InternalServerErrorException(
-          ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR),
-          ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR,
+          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR),
+          E_ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR,
         );
 
       case 191:
         throw new InternalServerErrorException(
-          ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.FB_RIDERECT_URI_ERROR),
-          ERROR_MESSAGE.FB_RIDERECT_URI_ERROR,
+          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR),
+          E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR,
         );
 
       default:
         throw new InternalServerErrorException(
-          ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.FB_OAUTH_ERROR),
-          ERROR_MESSAGE.FB_OAUTH_ERROR,
+          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_OAUTH_ERROR),
+          E_ERROR_MESSAGE.FB_OAUTH_ERROR,
         );
     }
   }

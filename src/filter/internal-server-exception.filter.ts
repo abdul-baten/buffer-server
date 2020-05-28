@@ -1,6 +1,6 @@
 import * as httpContext from 'express-http-context';
-import { CONTEXT } from '@enum';
-import { IError } from '@interface';
+import { E_CONTEXT } from '@enum';
+import { I_ERROR } from '@interface';
 import { Response } from 'express';
 import {
   ArgumentsHost,
@@ -20,8 +20,8 @@ export class InternalServerErrorExceptionFilter implements ExceptionFilter {
       message: errorMessage,
     } = exception.getResponse() as any;
 
-    const context = httpContext.get(CONTEXT.REQUEST_LOGGING);
-    httpContext.set(CONTEXT.REQUEST_LOGGING, {
+    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
+    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
       ...context,
       isError: true,
       errorDetails: exception.getResponse(),
@@ -31,6 +31,6 @@ export class InternalServerErrorExceptionFilter implements ExceptionFilter {
       errorCode,
       statusCode,
       errorMessage,
-    } as IError);
+    } as I_ERROR);
   }
 }

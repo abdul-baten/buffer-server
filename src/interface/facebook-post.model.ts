@@ -1,4 +1,4 @@
-export interface IFBPage {
+export interface I_FB_PAGE {
   access_token: string;
   category: string;
   _id: string;

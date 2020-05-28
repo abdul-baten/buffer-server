@@ -1,6 +1,6 @@
 import * as httpContext from 'express-http-context';
-import { CONTEXT } from '@enum';
-import { IError } from '@interface';
+import { E_CONTEXT } from '@enum';
+import { I_ERROR } from '@interface';
 import { Response } from 'express';
 import {
   ArgumentsHost,
@@ -17,8 +17,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const statusCode = exception.getStatus();
     const errorMessage = '';
 
-    const context = httpContext.get(CONTEXT.REQUEST_LOGGING);
-    httpContext.set(CONTEXT.REQUEST_LOGGING, {
+    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
+    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
       ...context,
       isError: true,
       errorDetails: exception.getResponse(),
@@ -30,6 +30,6 @@ export class HttpExceptionFilter implements ExceptionFilter {
     response.status(statusCode).json({
       statusCode,
       errorMessage,
-    } as IError);
+    } as I_ERROR);
   }
 }

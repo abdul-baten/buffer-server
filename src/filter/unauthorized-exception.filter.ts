@@ -1,6 +1,6 @@
 import * as httpContext from 'express-http-context';
-import { CONTEXT, ERROR_MESSAGE, ERROR_MESSAGE_MAP } from '@enum';
-import { IError } from '@app/interface';
+import { E_CONTEXT, E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enum';
+import { I_ERROR } from '@app/interface';
 import { Response } from 'express';
 import {
   ArgumentsHost,
@@ -17,17 +17,17 @@ export class UnauthorizedExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const statusCode = response.statusCode;
 
-    const context = httpContext.get(CONTEXT.REQUEST_LOGGING);
-    httpContext.set(CONTEXT.REQUEST_LOGGING, {
+    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
+    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
       ...context,
       isError: true,
       errorDetails: exception.getResponse(),
     });
 
     response.json({
-      errorCode: ERROR_MESSAGE.UNAUTHORISED_ERROR,
+      errorCode: E_ERROR_MESSAGE.UNAUTHORISED_ERROR,
       statusCode,
-      errorMessage: ERROR_MESSAGE_MAP.get(ERROR_MESSAGE.UNAUTHORISED_ERROR),
-    } as IError);
+      errorMessage: E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.UNAUTHORISED_ERROR),
+    } as I_ERROR);
   }
 }

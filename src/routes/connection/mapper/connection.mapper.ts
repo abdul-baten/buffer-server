@@ -1,9 +1,9 @@
 import * as jsonTransformer from 'jsonata';
 import { E_CONNECTION_TYPE } from '@app/enum';
-import { I_CONNECTION, IFBPage } from '@app/interface';
+import { I_CONNECTION, I_FB_PAGE } from '@app/interface';
 
-export class SocialProfileMapper {
-  static fbPageResponseMapper(pageInfo: Partial<IFBPage>): I_CONNECTION {
+export class ConnectionMapper {
+  static fbPageResponseMapper(pageInfo: Partial<I_FB_PAGE>): I_CONNECTION {
     const response = `
     {
         "connectionToken": $.access_token,

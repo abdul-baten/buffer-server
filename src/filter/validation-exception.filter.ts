@@ -1,8 +1,8 @@
 import * as httpContext from 'express-http-context';
 import { AuthMapper } from '@app/routes/auth/mapper/auth.mapper';
-import { CONTEXT } from '@enum';
+import { E_CONTEXT } from '@enum';
 import { Error } from 'mongoose';
-import { IError } from '@app/interface';
+import { I_ERROR } from '@app/interface';
 import { Response } from 'express';
 import {
   Catch,
@@ -18,8 +18,8 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     const response = ctx.getResponse<Response>();
     const statusCode = HttpStatus.BAD_REQUEST;
 
-    const context = httpContext.get(CONTEXT.REQUEST_LOGGING);
-    httpContext.set(CONTEXT.REQUEST_LOGGING, {
+    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
+    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
       ...context,
       isError: true,
       errorDetails: exception,
@@ -31,6 +31,6 @@ export class ValidationExceptionFilter implements ExceptionFilter {
     response.status(statusCode).json({
       statusCode,
       errorMessage: AuthMapper.signupValidationMapper(exception),
-    } as IError);
+    } as I_ERROR);
   }
 }
