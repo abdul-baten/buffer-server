@@ -1,5 +1,5 @@
-import { E_APP_ENVIRONMENT } from '@app/enum';
-import { EnvValidationUtil } from '@app/util/env-validation/env-validation.util';
+import { E_APP_ENVIRONMENT } from '@enums';
+// import { EnvValidationUtil } from '@utils';
 import { join } from 'path';
 
 const config = {
@@ -41,7 +41,7 @@ const config = {
   },
 };
 
-EnvValidationUtil.validate(config);
+// EnvValidationUtil.validate(config);
 
 export default config;
 

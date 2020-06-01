@@ -1,18 +1,11 @@
 import { ConnectionController } from './controller/connection.controller';
-import { ConnectionSchema } from './schema/connection.schema';
 import { ConnectionService } from './service/connection.service';
 import { Module } from '@nestjs/common';
-import { MongooseModule } from '@nestjs/mongoose';
-import { UserSchema } from '../auth/schema/user.schema';
+import { MongooseSchemaModule } from 'src/mongoose-schema.module';
 
 @Module({
   controllers: [ConnectionController],
   providers: [ConnectionService],
-  imports: [
-    MongooseModule.forFeature([
-      { name: 'User', schema: UserSchema },
-      { name: 'Connection', schema: ConnectionSchema },
-    ]),
-  ],
+  imports: [MongooseSchemaModule],
 })
 export class ConnectionModule {}

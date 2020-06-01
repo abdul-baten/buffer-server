@@ -1,6 +1,6 @@
 import * as httpContext from 'express-http-context';
-import { E_CONTEXT } from '@enum';
-import { I_ERROR } from '@interface';
+import { E_CONTEXT } from '@enums';
+import { I_ERROR } from '@interfaces';
 import { Response } from 'express';
 import {
   ArgumentsHost,

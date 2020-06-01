@@ -1,6 +1,6 @@
 import * as httpContext from 'express-http-context';
-import { E_CONTEXT, E_ERROR_MESSAGE_MAP, E_ERROR_MESSAGE } from '@enum';
-import { I_ERROR } from '@interface';
+import { E_CONTEXT, E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
+import { I_ERROR } from '@interfaces';
 import { Response } from 'express';
 import {
   ArgumentsHost,
@@ -26,7 +26,9 @@ export class ForbiddenExceptionFilter implements ExceptionFilter {
     response.status(statusCode).json({
       errorCode: E_ERROR_MESSAGE.SESSION_EXPIRED_CODE,
       statusCode,
-      errorMessage: E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.SESSION_EXPIRED_CODE),
+      errorMessage: E_ERROR_MESSAGE_MAP.get(
+        E_ERROR_MESSAGE.SESSION_EXPIRED_CODE,
+      ),
     } as I_ERROR);
   }
 }

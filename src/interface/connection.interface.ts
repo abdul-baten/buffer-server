@@ -1,8 +1,7 @@
 import { Document } from 'mongoose';
-import { E_CONNECTION_STATUS, E_CONNECTION_TYPE } from '@app/enum';
+import { E_CONNECTION_STATUS, E_CONNECTION_TYPE } from '@enums';
 
 export interface I_CONNECTION extends Document {
-  _id: string;
   connectionAdded?: Date;
   connectionCategory?: string;
   connectionID: string;
@@ -12,4 +11,5 @@ export interface I_CONNECTION extends Document {
   connectionToken: string;
   connectionType: E_CONNECTION_TYPE;
   connectionUserID: string;
+  id: string;
 }

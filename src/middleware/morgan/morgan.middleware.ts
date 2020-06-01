@@ -1,8 +1,8 @@
 import * as httpContext from 'express-http-context';
 import * as morgan from 'morgan';
-import { CommonUtil, LoggerUtil, NetworkUtil } from '@util';
+import { CommonUtil, LoggerUtil, NetworkUtil } from '@utils';
 import { ConfigService } from '@nestjs/config';
-import { E_CONTEXT } from '@enum';
+import { E_CONTEXT } from '@enums';
 import { INestApplication } from '@nestjs/common';
 import { NextFunction, Request, Response } from 'express';
 import { v4 as uuidv4 } from 'uuid';

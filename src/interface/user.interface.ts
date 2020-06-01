@@ -1,10 +1,10 @@
 import { Document } from 'mongoose';
 import {
-  E_SUBSCRIPTION_PLAN,
   E_ATTRIBUTION,
   E_BUSINESS_TYPE,
   E_COMPANY_SIZE,
-} from '@app/enum';
+  E_SUBSCRIPTION_PLAN,
+} from '@enums';
 
 export interface I_SUBSCRIPTION_PLAN {
   isTrial: boolean;
@@ -15,7 +15,7 @@ export interface I_SUBSCRIPTION_PLAN {
 }
 
 export interface I_USER extends Document {
-  _id: string;
+  id: string;
   attribution: E_ATTRIBUTION;
   businessType: E_BUSINESS_TYPE;
   companyName: string;

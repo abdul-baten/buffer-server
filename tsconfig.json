@@ -12,39 +12,54 @@
     "noUnusedParameters": true,
     "outDir": "./dist",
     "paths": {
-      "@app/*": [
-        "src/*"
-      ],
       "@config": [
         "src/config/index"
       ],
-      "@enum": [
+      "@definitions": [
+        "src/definition/index"
+      ],
+      "@dtos": [
+        "src/dto/index"
+      ],
+      "@enums": [
         "src/enum/index"
       ],
-      "@exception": [
+      "@exceptions": [
         "src/exception/index"
       ],
-      "@filter": [
+      "@filters": [
         "src/filter/index"
       ],
-      "@interceptor": [
+      "@guards": [
+        "src/guards/index"
+      ],
+      "@helpers": [
+        "src/helper/index"
+      ],
+      "@interceptors": [
         "src/interceptor/index"
       ],
-      "@interface": [
+      "@interfaces": [
         "src/interface/index"
       ],
-      "@middleware": [
+      "@mappers": [
+        "src/mapper/index"
+      ],
+      "@middlewares": [
         "src/middleware/index"
       ],
       "@routes/*": [
         "src/routes/*"
       ],
-      "@util": [
+      "@schemas": [
+        "src/schema/index"
+      ],
+      "@utils": [
         "src/util/index"
       ],
     },
     "removeComments": true,
-    "sourceMap": true,
+    "sourceMap": false,
     "strictNullChecks": true,
     "target": "es2017"
   },

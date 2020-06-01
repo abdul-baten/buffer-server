@@ -1,5 +1,5 @@
-import { AddConnectionDTO } from '../dto/connection.dto';
-import { AuthGuard } from '@app/guards/auth.guard';
+import { AddConnectionDTO } from '@dtos';
+import { AuthGuard } from '@guards';
 import { ConfigService } from '@nestjs/config';
 import { ConnectionService } from '../service/connection.service';
 import { forkJoin, from, Observable } from 'rxjs';
@@ -7,14 +7,13 @@ import { InjectModel } from '@nestjs/mongoose';
 import { map, switchMap } from 'rxjs/operators';
 import { Model } from 'mongoose';
 import { Request, Response } from 'express';
-import { SanitizerUtil } from '@app/util/sanitizer/sanitizer.util';
-import { TokenUtil } from '@app/util';
+import { SanitizerUtil, TokenUtil } from '@utils';
 import {
+  I_CONNECTION,
   I_FB_AUTH_RESPONSE,
   I_FB_PAGE_RESPONSE,
   I_USER,
-  I_CONNECTION,
-} from '@app/interface';
+} from '@interfaces';
 import {
   Controller,
   Get,
@@ -28,6 +27,7 @@ import {
   HttpStatus,
   Delete,
 } from '@nestjs/common';
+import { UserHelper } from 'src/helper';
 
 @Controller('')
 export class ConnectionController {
@@ -58,12 +58,12 @@ export class ConnectionController {
         switchMap((userInfo: Partial<I_USER>) => {
           const { email, _id } = userInfo;
           return from(
-            this.userModel
-              .find({ email, _id })
-              .lean()
-              .exec(),
+            UserHelper.findUserByEmailAndID(
+              this.userModel,
+              email as string,
+              _id,
+            ),
           ).pipe(
-            map(response => response[0]),
             map((response: Partial<I_USER>) =>
               SanitizerUtil.sanitizedResponse(response),
             ),
@@ -91,14 +91,14 @@ export class ConnectionController {
     return this.connectionService.addFBPage(addFBPageDTO);
   }
 
-  @Get('getConnections')
+  @Get('connections')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   getConnections(@Query('userID') userID: string): Observable<I_CONNECTION[]> {
     return this.connectionService.getConnections(userID);
   }
 
-  @Delete('deleteConnection')
+  @Delete('delete')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
   deleteConnection(

@@ -1,8 +1,8 @@
 import * as httpContext from 'express-http-context';
-import { AuthMapper } from '@app/routes/auth/mapper/auth.mapper';
-import { E_CONTEXT } from '@enum';
+import { AuthMapper } from 'src/mapper';
+import { E_CONTEXT } from '@enums';
 import { Error } from 'mongoose';
-import { I_ERROR } from '@app/interface';
+import { I_ERROR } from '@interfaces';
 import { Response } from 'express';
 import {
   Catch,

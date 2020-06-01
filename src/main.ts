@@ -1,5 +1,5 @@
-import middlewares from '@middleware';
-import { AppModule } from '@app/app.module';
+import middlewares from '@middlewares';
+import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
 import { INestApplication } from '@nestjs/common';
 import { join } from 'path';
@@ -12,7 +12,7 @@ import {
   InternalServerErrorExceptionFilter,
   MongoExceptionFilter,
   ValidationExceptionFilter,
-} from '@filter';
+} from '@filters';
 
 async function bootstrap() {
   const cert = readFileSync(join(process.cwd(), 'src/cert', 'cert.crt'));

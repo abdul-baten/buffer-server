@@ -1,5 +1,5 @@
-import { E_APP_ENVIRONMENT } from '@app/enum';
-import { EnvValidationUtil } from '@util';
+import { E_APP_ENVIRONMENT } from '@enums';
+import { EnvValidationUtil } from '@utils';
 
 const config = {
   APP: {

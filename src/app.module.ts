@@ -1,13 +1,13 @@
 import { APP_INTERCEPTOR } from '@nestjs/core';
-import { AppController } from '@app/app.controller';
-import { AppRoutingModule } from '@app/app-routing.module';
-import { AppService } from '@app/app.service';
+import { AppController } from './app.controller';
+import { AppRoutingModule } from './app-routing.module';
+import { AppService } from './app.service';
 import { ConfigModule } from '@nestjs/config';
 import { DatabaseConfigUtil } from './util';
 import { defaultConfig } from '@config';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
-import { RequestLogInterceptor } from '@interceptor';
+import { RequestLogInterceptor } from '@interceptors';
 import { ScheduleModule } from '@nestjs/schedule';
 
 @Module({

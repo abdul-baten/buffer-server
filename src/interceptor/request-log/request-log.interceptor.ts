@@ -1,5 +1,5 @@
 import * as httpContext from 'express-http-context';
-import { E_CONTEXT } from '@enum';
+import { E_CONTEXT } from '@enums';
 import { Observable } from 'rxjs';
 import {
   CallHandler,

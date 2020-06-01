@@ -1,9 +1,7 @@
 import * as dotenv from 'dotenv';
 dotenv.config();
 
-const configuration =
+export const configuration =
   require(`./env/${process.env.NODE_ENV ?? 'development'}`) || {};
 
-const defaultConfig = () => ({ ...configuration.default });
-
-export { configuration, defaultConfig };
+export const defaultConfig = () => ({ ...configuration.default });

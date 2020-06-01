@@ -1,27 +1,18 @@
-import { catchError, map, switchMap } from 'rxjs/operators';
 import { compareSync } from 'bcrypt';
 import { ConfigService } from '@nestjs/config';
-import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@app/enum';
-import { from, Observable } from 'rxjs';
-import { I_USER } from '@app/interface';
+import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
+import { I_USER } from '@interfaces';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { SanitizerUtil } from '@app/util/sanitizer/sanitizer.util';
-import { TokenUtil } from '@app/util';
-import { UserEnterDTO } from '../dto/user-enter.dto';
-import { UserJoinDTO } from '../dto/user-join.dto';
-import { UserOnboardDTO } from '../dto/user-onboard.dto';
-import {
-  Injectable,
-  InternalServerErrorException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { TokenUtil } from '@utils';
+import { UserEnterDTO, UserJoinDTO, UserOnboardDTO } from '@dtos';
 
 @Injectable()
 export class AuthService {
   constructor(
     @InjectModel('User') private readonly userModel: Model<I_USER>,
-    private configService: ConfigService,
+    private readonly configService: ConfigService,
   ) {}
 
   async userEnter(userEnterDTO: UserEnterDTO): Promise<any> {
@@ -72,34 +63,6 @@ export class AuthService {
     }
   }
 
-  async userVerify(token: string): Promise<any> {
-    const data = await TokenUtil.verifyUser(token, this.configService);
-    return data;
-  }
-
-  async findUser(email?: string, _id?: string): Promise<I_USER> {
-    try {
-      const user = await this.userModel
-        .findOne({ email, _id })
-        .lean()
-        .exec();
-
-      if (!user) {
-        throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS),
-          E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS,
-        );
-      }
-
-      return user;
-    } catch (error) {
-      throw new InternalServerErrorException(
-        E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS),
-        E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS,
-      );
-    }
-  }
-
   async userOnboard(
     userOnboardDTO: UserOnboardDTO,
   ): Promise<{ user: I_USER; authToken: string }> {
@@ -114,7 +77,9 @@ export class AuthService {
 
       if (!user) {
         throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND),
+          E_ERROR_MESSAGE_MAP.get(
+            E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND,
+          ),
           E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND,
         );
       }
@@ -133,19 +98,5 @@ export class AuthService {
         E_ERROR_MESSAGE.INTERNAL_SERVER_ERROR,
       );
     }
-  }
-
-  getUserInfo(authToken: string): Observable<I_USER> {
-    const userInfo$ = from(TokenUtil.jwtVerify(authToken, this.configService));
-    return userInfo$.pipe(
-      switchMap((userInfo: any) => {
-        return from(this.findUser(userInfo.email, userInfo._id));
-      }),
-      map((userInfo: I_USER) => SanitizerUtil.sanitizedResponse(userInfo)),
-      map((userInfo: I_USER) => userInfo),
-      catchError(_ => {
-        throw new ForbiddenException();
-      }),
-    );
   }
 }

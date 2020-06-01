@@ -1,21 +1,20 @@
-import { AddConnectionDTO } from '../dto/connection.dto';
+import { AddConnectionDTO } from '@dtos';
 import { catchError, defaultIfEmpty, map, pluck } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
-import { ConnectionMapper } from '../mapper/connection.mapper';
-import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@app/enum';
+import { ConnectionMapper } from '@mappers';
+import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
 import { from, Observable } from 'rxjs';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { LoggerUtil } from '@app/util';
-import { Model } from 'mongoose';
-import { promisifyAll } from 'bluebird';
-import { SanitizerUtil } from '@app/util/sanitizer/sanitizer.util';
 import {
   I_CONNECTION,
   I_FB_AUTH_ERROR,
   I_FB_AUTH_RESPONSE,
   I_FB_PAGE,
-} from '@app/interface';
+} from '@interfaces';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { LoggerUtil, SanitizerUtil } from '@utils';
+import { Model } from 'mongoose';
+import { promisifyAll } from 'bluebird';
 
 const Graph = require('fbgraph');
 Graph.setVersion('6.0');
@@ -134,6 +133,11 @@ export class ConnectionService {
           SanitizerUtil.sanitizedResponse(connection),
         );
       }),
+      map((connections: I_CONNECTION[]) => {
+        return connections.map((connection: I_CONNECTION) =>
+          ConnectionMapper.connectionsResponseMapper(connection),
+        );
+      }),
       map((connections: I_CONNECTION[]) => connections),
       catchError(error => {
         throw new InternalServerErrorException(error);
@@ -153,6 +157,9 @@ export class ConnectionService {
       map((connection: I_CONNECTION) =>
         SanitizerUtil.sanitizedResponse(connection),
       ),
+      map((connection: I_CONNECTION) => {
+        return ConnectionMapper.connectionsResponseMapper(connection);
+      }),
       map((connection: I_CONNECTION) => connection),
       catchError(() => {
         throw new InternalServerErrorException(

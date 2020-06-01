@@ -1,14 +1,11 @@
-import { AuthGuard } from '@app/guards/auth.guard';
-import { AuthMapper } from '../mapper/auth.mapper';
+import { AuthMapper } from '@mappers';
 import { AuthService } from '../service/auth.service';
-import { catchError, map, mergeMap } from 'rxjs/operators';
 import { ClearCookies, SetCookies } from '@nestjsplus/cookies';
-import { from, Observable, of } from 'rxjs';
-import { I_USER } from '@app/interface';
-import { Request, Response } from 'express';
-import { UserEnterDTO } from '../dto/user-enter.dto';
-import { UserJoinDTO } from '../dto/user-join.dto';
-import { UserOnboardDTO } from '../dto/user-onboard.dto';
+import { from, Observable } from 'rxjs';
+import { I_USER } from '@interfaces';
+import { map } from 'rxjs/operators';
+import { Response } from 'express';
+import { UserEnterDTO, UserJoinDTO, UserOnboardDTO } from '@dtos';
 import {
   Body,
   Controller,
@@ -18,10 +15,8 @@ import {
   Patch,
   Post,
   Redirect,
-  Req,
   Request as NestRequest,
   Res,
-  UseGuards,
 } from '@nestjs/common';
 
 @Controller('')
@@ -72,35 +67,6 @@ export class AuthController {
         return AuthMapper.userResponseMapper(user);
       }),
     );
-  }
-
-  @Post('verify')
-  @HttpCode(HttpStatus.ACCEPTED)
-  verifyToken(@Req() request: Request): Observable<{ verified: boolean }> {
-    const cookie = request.cookies.authToken;
-
-    if (!cookie) {
-      return of({ verified: false });
-    }
-
-    const userVerified = from(this.authService.userVerify(cookie));
-    return userVerified.pipe(
-      mergeMap((userInfo: Partial<I_USER>) => {
-        return from(
-          this.authService.findUser(userInfo.email, userInfo._id),
-        ).pipe(
-          map((p: any) => ({ verified: !!p })),
-          catchError(_ => of({ verified: false })),
-        );
-      }),
-    );
-  }
-
-  @Get('getUserInfo')
-  @UseGuards(AuthGuard)
-  getUserInfo(@Req() request: Request): Observable<I_USER> {
-    const { authToken } = request.cookies;
-    return this.authService.getUserInfo(authToken);
   }
 
   @Get('logout')
