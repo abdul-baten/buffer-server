@@ -5,16 +5,17 @@ import { INestApplication } from '@nestjs/common';
 import { join } from 'path';
 import { NestFactory } from '@nestjs/core';
 import { readFileSync } from 'fs';
-import { UnauthorizedExceptionFilter } from './filter/unauthorized-exception.filter';
 import {
   // HttpExceptionFilter,
   ForbiddenExceptionFilter,
   InternalServerErrorExceptionFilter,
   MongoExceptionFilter,
+  UnauthorizedExceptionFilter,
+  UnprocessableEntityExceptionFilter,
   ValidationExceptionFilter,
 } from '@filters';
 
-async function bootstrap() {
+async function bootstrap(): Promise<void> {
   const cert = readFileSync(join(process.cwd(), 'src/cert', 'cert.crt'));
   const key = readFileSync(join(process.cwd(), 'src/cert', 'cert.key'));
   const app: INestApplication = await NestFactory.create(AppModule, {
@@ -48,11 +49,7 @@ async function bootstrap() {
   }
 
   app.enableCors({
-    origin: [
-      'https://localhost:3000',
-      'https://localhost:5000',
-      'http://localhost:5000',
-    ],
+    origin: ['https://localhost:3000', 'https://localhost:5000', 'http://localhost:5000'],
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
   });
@@ -62,6 +59,7 @@ async function bootstrap() {
     // new HttpExceptionFilter(),
     new ForbiddenExceptionFilter(),
     new UnauthorizedExceptionFilter(),
+    new UnprocessableEntityExceptionFilter(),
     new ValidationExceptionFilter(),
     new MongoExceptionFilter(),
   );
@@ -69,4 +67,5 @@ async function bootstrap() {
   await app.listen(port);
   console.log(`Application is running on: ${await app.getUrl()}`);
 }
+
 bootstrap();

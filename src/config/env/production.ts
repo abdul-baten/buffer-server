@@ -1,5 +1,6 @@
 import { E_APP_ENVIRONMENT } from '@enums';
 import { EnvValidationUtil } from '@utils';
+import { join } from 'path';
 
 const config = {
   APP: {
@@ -7,6 +8,7 @@ const config = {
     PORT: parseInt(process.env.PORT as string, 10) || 3000,
     API_PREFIX: '/api/v1.0.0',
     CLIENT_UNAUTH_REDIRECT_URL: 'https://localhost:5000/enter',
+    UPLOAD_DIR: join(process.cwd(), 'upload'),
   },
   LOGGING: {
     LABEL: E_APP_ENVIRONMENT.PRODUCTION,
@@ -31,8 +33,7 @@ const config = {
     FACEBOOK: {
       CLIENT_ID: '466314977585281',
       CLIENT_SECRET: '8628ebbe08dab12d34b5860df4336037',
-      SCOPE:
-        'manage_pages, pages_show_list, read_insights, publish_video, publish_pages, public_profile',
+      SCOPE: 'manage_pages, pages_show_list, read_insights, publish_video, publish_pages, public_profile',
       REDIRECT_URL: 'https://localhost:5000/oauth/facebook',
     },
   },

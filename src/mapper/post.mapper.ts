@@ -2,7 +2,7 @@ import * as jsonTransformer from 'jsonata';
 import { I_POST } from '@interfaces';
 
 export class PostMapper {
-  static addPostResponseMapper(connection: I_POST): I_POST {
+  static postResponseMapper(postInfo: I_POST): I_POST {
     const response = `
     {
       "id": $._id,
@@ -18,6 +18,6 @@ export class PostMapper {
     }
     `;
 
-    return jsonTransformer(response).evaluate(connection);
+    return jsonTransformer(response).evaluate(postInfo);
   }
 }

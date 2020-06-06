@@ -2,12 +2,7 @@ import * as httpContext from 'express-http-context';
 import { E_CONTEXT } from '@enums';
 import { I_ERROR } from '@interfaces';
 import { Response } from 'express';
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  InternalServerErrorException,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, InternalServerErrorException } from '@nestjs/common';
 
 @Catch(InternalServerErrorException)
 export class InternalServerErrorExceptionFilter implements ExceptionFilter {
@@ -15,10 +10,7 @@ export class InternalServerErrorExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const statusCode = exception.getStatus();
-    const {
-      error: errorCode,
-      message: errorMessage,
-    } = exception.getResponse() as any;
+    const { error: errorCode, message: errorMessage } = exception.getResponse() as any;
 
     const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
     httpContext.set(E_CONTEXT.REQUEST_LOGGING, {

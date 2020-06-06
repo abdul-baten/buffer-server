@@ -19,17 +19,12 @@ export class AuthService {
     const { email, password } = userEnterDTO;
 
     try {
-      const user: I_USER = (await this.userModel
-        .findOne({ email })
-        .exec()) as I_USER;
+      const user: I_USER = (await this.userModel.findOne({ email }).exec()) as I_USER;
       if (user) {
         const passwordMatches = compareSync(password, user.password);
 
         if (passwordMatches) {
-          const token = await TokenUtil.jwtSign(
-            { email, _id: user._id },
-            this.configService,
-          );
+          const token = await TokenUtil.jwtSign({ email, _id: user._id }, this.configService);
           return { user, token };
         } else {
           throw new InternalServerErrorException(
@@ -63,9 +58,7 @@ export class AuthService {
     }
   }
 
-  async userOnboard(
-    userOnboardDTO: UserOnboardDTO,
-  ): Promise<{ user: I_USER; authToken: string }> {
+  async userOnboard(userOnboardDTO: UserOnboardDTO): Promise<{ user: I_USER; authToken: string }> {
     try {
       const { email: emailAddress } = userOnboardDTO;
       const user = await this.userModel
@@ -77,18 +70,13 @@ export class AuthService {
 
       if (!user) {
         throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(
-            E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND,
-          ),
+          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND),
           E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND,
         );
       }
 
       const { email, _id } = user;
-      const authToken = await TokenUtil.jwtSign(
-        { email, _id },
-        this.configService,
-      );
+      const authToken = await TokenUtil.jwtSign({ email, _id }, this.configService);
 
       delete user.password;
       return { user, authToken };

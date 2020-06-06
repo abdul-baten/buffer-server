@@ -23,9 +23,6 @@ import { ScheduleModule } from '@nestjs/schedule';
     }),
   ],
   controllers: [AppController],
-  providers: [
-    AppService,
-    { provide: APP_INTERCEPTOR, useClass: RequestLogInterceptor },
-  ],
+  providers: [AppService, { provide: APP_INTERCEPTOR, useClass: RequestLogInterceptor }],
 })
 export class AppModule {}

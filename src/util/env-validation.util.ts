@@ -12,25 +12,14 @@ export class EnvValidationUtil {
         .required(),
       API_PREFIX: Joi.string().required(),
       CLIENT_UNAUTH_REDIRECT_URL: Joi.string().required(),
+      UPLOAD_DIR:  Joi.string().required(),
     },
     LOGGING: {
       LABEL: Joi.string()
         .valid('development', 'production')
         .required(),
       LEVEL: Joi.string()
-        .valid(
-          'error',
-          'warn',
-          'help',
-          'data',
-          'info',
-          'debug',
-          'prompt',
-          'http',
-          'verbose',
-          'input',
-          'silly',
-        )
+        .valid('error', 'warn', 'help', 'data', 'info', 'debug', 'prompt', 'http', 'verbose', 'input', 'silly')
         .required(),
       MORGAN_FORMAT: Joi.string()
         .valid('combined', 'common', 'dev', 'short', 'tiny')

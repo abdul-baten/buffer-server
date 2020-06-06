@@ -4,12 +4,7 @@ import { E_CONTEXT } from '@enums';
 import { Error } from 'mongoose';
 import { I_ERROR } from '@interfaces';
 import { Response } from 'express';
-import {
-  Catch,
-  ExceptionFilter,
-  ArgumentsHost,
-  HttpStatus,
-} from '@nestjs/common';
+import { Catch, ExceptionFilter, ArgumentsHost, HttpStatus } from '@nestjs/common';
 
 @Catch(Error)
 export class ValidationExceptionFilter implements ExceptionFilter {

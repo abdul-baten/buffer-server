@@ -34,13 +34,8 @@ export class AuthController {
 
   @Patch('onboard')
   @HttpCode(HttpStatus.CREATED)
-  async onboardUser(
-    @Body() userOnboardDTO: UserOnboardDTO,
-    @Res() response: Response,
-  ): Promise<any> {
-    const { user, authToken } = await this.authService.userOnboard(
-      userOnboardDTO,
-    );
+  async onboardUser(@Body() userOnboardDTO: UserOnboardDTO, @Res() response: Response): Promise<any> {
+    const { user, authToken } = await this.authService.userOnboard(userOnboardDTO);
     response.cookie('authToken', authToken, { httpOnly: true, secure: true });
     response.json(user);
   }
@@ -48,10 +43,7 @@ export class AuthController {
   @Post('enter')
   @HttpCode(HttpStatus.OK)
   @SetCookies({ httpOnly: true, secure: true, sameSite: true })
-  enterUser(
-    @Body() createUserDto: UserEnterDTO,
-    @NestRequest() request: any,
-  ): Observable<Partial<I_USER>> {
+  enterUser(@Body() createUserDto: UserEnterDTO, @NestRequest() request: any): Observable<Partial<I_USER>> {
     const userInfo = from(this.authService.userEnter(createUserDto));
 
     return userInfo.pipe(

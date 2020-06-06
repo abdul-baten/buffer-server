@@ -7,11 +7,7 @@ import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { SanitizerUtil, TokenUtil } from '@utils';
 import { UserMapper } from '@mappers';
-import {
-  Injectable,
-  InternalServerErrorException,
-  ForbiddenException,
-} from '@nestjs/common';
+import { Injectable, InternalServerErrorException, ForbiddenException } from '@nestjs/common';
 
 @Injectable()
 export class UserService {

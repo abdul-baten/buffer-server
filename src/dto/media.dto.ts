@@ -1,21 +1,25 @@
 import { IsDefined, IsString } from 'class-validator';
 
-export class FileDTO {
+export class MediaDTO {
   @IsDefined()
   @IsString()
-  readonly fileMimeType: string;
+  readonly mediaMimeType: string;
 
   @IsDefined()
   @IsString()
-  readonly fileName: string;
+  readonly mediaName: string;
 
   @IsDefined()
   @IsString()
-  readonly fileType: string;
+  readonly mediaType: string;
 
   @IsDefined()
   @IsString()
-  readonly fileURL: string;
+  readonly mediaURL: string;
+
+  @IsDefined()
+  @IsString()
+  readonly mediaSize: string;
 
   @IsDefined()
   @IsString()

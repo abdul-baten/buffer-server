@@ -1,10 +1,5 @@
 import { Document } from 'mongoose';
-import {
-  E_ATTRIBUTION,
-  E_BUSINESS_TYPE,
-  E_COMPANY_SIZE,
-  E_SUBSCRIPTION_PLAN,
-} from '@enums';
+import { E_ATTRIBUTION, E_BUSINESS_TYPE, E_COMPANY_SIZE, E_SUBSCRIPTION_PLAN } from '@enums';
 
 export interface I_SUBSCRIPTION_PLAN {
   isTrial: boolean;

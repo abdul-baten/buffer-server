@@ -3,6 +3,7 @@ import { HttpExceptionFilter } from './http-exception.filter';
 import { InternalServerErrorExceptionFilter } from './internal-server-exception.filter';
 import { MongoExceptionFilter } from './mongo-exception.filter';
 import { UnauthorizedExceptionFilter } from './unauthorized-exception.filter';
+import { UnprocessableEntityExceptionFilter } from './unprocessable-exception.filter';
 import { ValidationExceptionFilter } from './validation-exception.filter';
 
 export {
@@ -11,5 +12,6 @@ export {
   InternalServerErrorExceptionFilter,
   MongoExceptionFilter,
   UnauthorizedExceptionFilter,
+  UnprocessableEntityExceptionFilter,
   ValidationExceptionFilter,
 };

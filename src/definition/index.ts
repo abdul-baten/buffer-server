@@ -1,6 +1,6 @@
 import { ConnectionDefinition } from './connection.definition';
-import { FileDefinition } from './file.definition';
+import { MediaDefinition } from './media.definition';
 import { PostDefinition } from './post.definition';
 import { UserDefinition } from './user.definition';
 
-export { ConnectionDefinition, FileDefinition, PostDefinition, UserDefinition };
+export { ConnectionDefinition, MediaDefinition, PostDefinition, UserDefinition };

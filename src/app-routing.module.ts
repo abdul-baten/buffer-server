@@ -1,5 +1,6 @@
 import { AuthModule } from '@routes/auth/auth.module';
 import { ConnectionModule } from '@routes/connection/connection.module';
+import { MediaModule } from './routes/media/media.module';
 import { Module } from '@nestjs/common';
 import { PostModule } from '@routes/post/post.module';
 import { RouterModule, Routes } from 'nest-router';
@@ -7,29 +8,28 @@ import { UserModule } from '@routes/user/user.module';
 
 const routes: Routes = [
   {
-    path: 'auth',
     module: AuthModule,
+    path: 'auth',
   },
   {
-    path: 'connection',
     module: ConnectionModule,
+    path: 'connection',
   },
   {
-    path: 'post',
     module: PostModule,
+    path: 'post',
   },
   {
-    path: 'user',
     module: UserModule,
+    path: 'user',
+  },
+  {
+    module: MediaModule,
+    path: 'media',
   },
 ];
 
 @Module({
-  imports: [
-    AuthModule,
-    ConnectionModule,
-    PostModule,
-    RouterModule.forRoutes(routes),
-  ],
+  imports: [AuthModule, ConnectionModule, MediaModule, PostModule, RouterModule.forRoutes(routes), UserModule],
 })
 export class AppRoutingModule {}

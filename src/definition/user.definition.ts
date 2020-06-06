@@ -1,9 +1,4 @@
-import {
-  E_ATTRIBUTION,
-  E_BUSINESS_TYPE,
-  E_COMPANY_SIZE,
-  E_SUBSCRIPTION_PLAN,
-} from '@enums';
+import { E_ATTRIBUTION, E_BUSINESS_TYPE, E_COMPANY_SIZE, E_SUBSCRIPTION_PLAN } from '@enums';
 import { REG_EX_PATTERNS } from '@utils';
 import { SchemaDefinition } from 'mongoose';
 
@@ -66,10 +61,7 @@ export const UserDefinition: SchemaDefinition = {
     required: [true, 'Full name is required!'],
     trim: true,
     type: String,
-    match: [
-      REG_EX_PATTERNS.ALPHA_NUMERIC_WITH_SPACE,
-      'Full name is not valid.',
-    ],
+    match: [REG_EX_PATTERNS.ALPHA_NUMERIC_WITH_SPACE, 'Full name is not valid.'],
   },
   password: {
     type: String,
@@ -81,11 +73,7 @@ export const UserDefinition: SchemaDefinition = {
       default: true,
     },
     subscriptionPlan: {
-      enum: [
-        E_SUBSCRIPTION_PLAN.PROFESSIONAL,
-        E_SUBSCRIPTION_PLAN.ADVANCED,
-        E_SUBSCRIPTION_PLAN.AGENCY,
-      ],
+      enum: [E_SUBSCRIPTION_PLAN.PROFESSIONAL, E_SUBSCRIPTION_PLAN.ADVANCED, E_SUBSCRIPTION_PLAN.AGENCY],
       type: String,
       trim: true,
     },

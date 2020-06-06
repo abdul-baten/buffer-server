@@ -7,25 +7,25 @@ export const PostDefinition: SchemaDefinition = {
     trim: true,
     type: String,
   },
-  postConnection: [
-    {
-      type: Types.ObjectId,
-      ref: 'Connection',
-    },
-  ],
+  postConnection: {
+    type: Types.ObjectId,
+    ref: 'Connection',
+    required: [true, 'Post Connection is required!'],
+  },
   postScheduleDate: {
     required: [true, 'Post Date is required!'],
     type: Date,
     default: Date.now(),
   },
-  //   postMedia: {},
+  postMedia: [
+    {
+      type: String,
+      trim: true,
+      required: true,
+    },
+  ],
   postStatus: {
-    enum: [
-      E_POST_STATUS.DELETED,
-      E_POST_STATUS.PUBLISHED,
-      E_POST_STATUS.SAVED,
-      E_POST_STATUS.SCHEDULED,
-    ],
+    enum: [E_POST_STATUS.DELETED, E_POST_STATUS.PUBLISHED, E_POST_STATUS.SAVED, E_POST_STATUS.SCHEDULED],
     trim: true,
     type: String,
     required: [true, 'Post Status is required!'],

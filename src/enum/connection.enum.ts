@@ -1,12 +1,12 @@
 export enum E_CONNECTION_TYPE {
-  FACEBOOK_GROUP = 'facebook_group',
-  FACEBOOK_PAGE = 'facebook_page',
-  INSTAGRAM_BUSINESS = 'instagram_business',
-  INSTAGRAM_PERSONAL = 'instagram_personal',
-  LINKEDIN_PAGE = 'linkedin_page',
-  LINKEDIN_PROFILE = 'linkedin_profile',
-  PINTEREST = 'pinterest',
-  TWITTER = 'twitter',
+  FACEBOOK_GROUP = 'Facebook_Group',
+  FACEBOOK_PAGE = 'Facebook_Page',
+  INSTAGRAM_BUSINESS = 'Instagram_Business',
+  INSTAGRAM_PERSONAL = 'Instagram_Personal',
+  LINKEDIN_PAGE = 'Linkedin_Page',
+  LINKEDIN_PROFILE = 'Linkedin_Profile',
+  PINTEREST = 'Pinterest',
+  TWITTER = 'Twitter',
 }
 
 export enum E_CONNECTION_STATUS {

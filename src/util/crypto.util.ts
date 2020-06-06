@@ -1,11 +1,6 @@
 import { InternalServerErrorException } from '@nestjs/common';
 import { LoggerUtil } from './logger.util';
-import {
-  createCipheriv,
-  createDecipheriv,
-  createHash,
-  randomBytes,
-} from 'crypto';
+import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
 
 const resizedIV = Buffer.allocUnsafe(16),
   iv = createHash('sha256')

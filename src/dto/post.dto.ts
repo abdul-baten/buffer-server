@@ -1,12 +1,6 @@
 import { E_POST_STATUS, E_POST_TYPE } from '@enums';
-import { I_POST_FILE } from '@interfaces';
-import {
-  IsDefined,
-  IsString,
-  IsArray,
-  IsOptional,
-  IsEnum,
-} from 'class-validator';
+import { I_MEDIA } from '@interfaces';
+import { IsArray, IsDefined, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class PostDTO {
   @IsDefined()
@@ -15,11 +9,11 @@ export class PostDTO {
 
   @IsDefined()
   @IsArray()
-  readonly postConnection: string[];
+  readonly postConnection: string;
 
   @IsOptional()
   @IsArray()
-  readonly postMedia: I_POST_FILE[];
+  readonly postMedia: I_MEDIA['id'][];
 
   @IsDefined()
   @IsString()

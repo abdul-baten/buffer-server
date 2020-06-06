@@ -2,12 +2,7 @@ import * as httpContext from 'express-http-context';
 import { E_CONTEXT } from '@enums';
 import { I_ERROR } from '@interfaces';
 import { Response } from 'express';
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpException,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpException } from '@nestjs/common';
 
 @Catch(HttpException)
 export class HttpExceptionFilter implements ExceptionFilter {

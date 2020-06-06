@@ -1,11 +1,11 @@
-import { ConnectionSchema, FileSchema, PostSchema, UserSchema } from '@schemas';
+import { ConnectionSchema, MediaSchema, PostSchema, UserSchema } from '@schemas';
 import { Module } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 @Module({
   imports: [
     MongooseModule.forFeature([
       { name: 'Connection', schema: ConnectionSchema },
-      { name: 'File', schema: FileSchema },
+      { name: 'Media', schema: MediaSchema },
       { name: 'Post', schema: PostSchema },
       { name: 'User', schema: UserSchema },
     ]),
@@ -13,7 +13,7 @@ import { MongooseModule } from '@nestjs/mongoose';
   exports: [
     MongooseModule.forFeature([
       { name: 'Connection', schema: ConnectionSchema },
-      { name: 'File', schema: FileSchema },
+      { name: 'Media', schema: MediaSchema },
       { name: 'Post', schema: PostSchema },
       { name: 'User', schema: UserSchema },
     ]),

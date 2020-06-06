@@ -4,12 +4,7 @@ import { ConfigService } from '@nestjs/config';
 import { ConnectionMapper } from '@mappers';
 import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
 import { from, Observable } from 'rxjs';
-import {
-  I_CONNECTION,
-  I_FB_AUTH_ERROR,
-  I_FB_AUTH_RESPONSE,
-  I_FB_PAGE,
-} from '@interfaces';
+import { I_CONNECTION, I_FB_AUTH_ERROR, I_FB_AUTH_RESPONSE, I_FB_PAGE } from '@interfaces';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { LoggerUtil, SanitizerUtil } from '@utils';
@@ -34,12 +29,8 @@ export class ConnectionService {
     redirect_uri: string;
   } {
     return {
-      client_id: this.configService.get<string>(
-        'SOCIAL_PLATFORM.FACEBOOK.CLIENT_ID',
-      ) as string,
-      redirect_uri: this.configService.get<string>(
-        'SOCIAL_PLATFORM.FACEBOOK.REDIRECT_URL',
-      ) as string,
+      client_id: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.CLIENT_ID') as string,
+      redirect_uri: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.REDIRECT_URL') as string,
     };
   }
 
@@ -48,9 +39,7 @@ export class ConnectionService {
     try {
       return Graph.getOauthUrl({
         ...config,
-        scope: this.configService.get<string>(
-          'SOCIAL_PLATFORM.FACEBOOK.SCOPE',
-        ) as string,
+        scope: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.SCOPE') as string,
       });
     } catch (error) {
       LoggerUtil.logInfo(error);
@@ -62,9 +51,7 @@ export class ConnectionService {
     return from(
       Graph.authorizeAsync({
         ...config,
-        client_secret: this.configService.get<string>(
-          'SOCIAL_PLATFORM.FACEBOOK.CLIENT_SECRET',
-        ) as string,
+        client_secret: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.CLIENT_SECRET') as string,
         code,
       }),
     ).pipe(
@@ -108,9 +95,7 @@ export class ConnectionService {
   addFBPage(addFBPageDTO: AddConnectionDTO): Observable<I_CONNECTION> {
     const connection = new this.connectionModel(addFBPageDTO);
     return from(connection.save()).pipe(
-      map((connection: I_CONNECTION) =>
-        SanitizerUtil.sanitizedResponse(connection),
-      ),
+      map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection)),
       map((connection: I_CONNECTION) => connection),
       catchError(error => {
         throw new InternalServerErrorException(error);
@@ -122,21 +107,16 @@ export class ConnectionService {
     const connections$ = from(
       this.connectionModel
         .find({ connectionUserID: userID })
-        .limit(5)
         .lean()
         .exec(),
     );
 
     return connections$.pipe(
       map((connections: I_CONNECTION[]) => {
-        return connections.map((connection: I_CONNECTION) =>
-          SanitizerUtil.sanitizedResponse(connection),
-        );
+        return connections.map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection));
       }),
       map((connections: I_CONNECTION[]) => {
-        return connections.map((connection: I_CONNECTION) =>
-          ConnectionMapper.connectionsResponseMapper(connection),
-        );
+        return connections.map((connection: I_CONNECTION) => ConnectionMapper.connectionsResponseMapper(connection));
       }),
       map((connections: I_CONNECTION[]) => connections),
       catchError(error => {
@@ -154,9 +134,7 @@ export class ConnectionService {
     );
 
     return deletedConnection$.pipe(
-      map((connection: I_CONNECTION) =>
-        SanitizerUtil.sanitizedResponse(connection),
-      ),
+      map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection)),
       map((connection: I_CONNECTION) => {
         return ConnectionMapper.connectionsResponseMapper(connection);
       }),
@@ -180,16 +158,10 @@ export class ConnectionService {
         );
 
       case 191:
-        throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR),
-          E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR,
-        );
+        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR), E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR);
 
       default:
-        throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_OAUTH_ERROR),
-          E_ERROR_MESSAGE.FB_OAUTH_ERROR,
-        );
+        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_OAUTH_ERROR), E_ERROR_MESSAGE.FB_OAUTH_ERROR);
     }
   }
 }

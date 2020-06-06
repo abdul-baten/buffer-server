@@ -3,12 +3,7 @@ import { E_CONTEXT } from '@enums';
 import { I_ERROR } from '@interfaces';
 import { MongoError } from 'mongodb';
 import { Response } from 'express';
-import {
-  ArgumentsHost,
-  Catch,
-  ExceptionFilter,
-  HttpStatus,
-} from '@nestjs/common';
+import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
 
 @Catch(MongoError)
 export class MongoExceptionFilter implements ExceptionFilter {

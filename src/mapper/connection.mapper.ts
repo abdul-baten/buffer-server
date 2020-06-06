@@ -4,23 +4,20 @@ import { I_CONNECTION, I_FB_PAGE } from '@interfaces';
 
 export class ConnectionMapper {
   static fbPageResponseMapper(pageInfo: Partial<I_FB_PAGE>): I_CONNECTION {
-    const response = `
-    {
+    const response = `{
         "connectionToken": $.access_token,
         "connectionCategory": $.category,
         "connectionID": $.id,
         "connectionName": $.name,
         "connectionPicture": $.picture.data.url,
         "connectionNetwork": ${E_CONNECTION_TYPE.FACEBOOK_PAGE}
-    }
-    `;
+    }`;
 
     return jsonTransformer(response).evaluate(pageInfo);
   }
 
-  static connectionsResponseMapper(connection: I_CONNECTION): I_CONNECTION {
-    const response = `
-    {
+  static connectionsResponseMapper(connectionInfo: I_CONNECTION): I_CONNECTION {
+    const response = `{
       "id": $._id,
       "connectionAdded": $.connectionAdded,
       "connectionUpdated": $.connectionUpdated,
@@ -32,9 +29,8 @@ export class ConnectionMapper {
       "connectionUserID": $.connectionUserID,
       "connectionStatus": $.connectionStatus,
       "connectionType": $.connectionType
-    }
-    `;
+    }`;
 
-    return jsonTransformer(response).evaluate(connection);
+    return jsonTransformer(response).evaluate(connectionInfo);
   }
 }

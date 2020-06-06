@@ -22,16 +22,12 @@ export class AuthGuard implements CanActivate {
       return of(false);
     }
 
-    const userVerified = from(
-      TokenUtil.verifyUser(authToken, this.configService),
-    );
+    const userVerified = from(TokenUtil.verifyUser(authToken, this.configService));
 
     return userVerified.pipe(
       mergeMap((userInfo: Partial<I_USER>) => {
         const { email, _id } = userInfo;
-        return from(
-          UserHelper.findUserByEmailAndID(this.userModel, email as string, _id),
-        ).pipe(
+        return from(UserHelper.findUserByEmailAndID(this.userModel, email as string, _id)).pipe(
           map((p: any) => !!p),
           catchError(_ => of(false)),
         );

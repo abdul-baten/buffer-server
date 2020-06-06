@@ -8,25 +8,8 @@ import { map, switchMap } from 'rxjs/operators';
 import { Model } from 'mongoose';
 import { Request, Response } from 'express';
 import { SanitizerUtil, TokenUtil } from '@utils';
-import {
-  I_CONNECTION,
-  I_FB_AUTH_RESPONSE,
-  I_FB_PAGE_RESPONSE,
-  I_USER,
-} from '@interfaces';
-import {
-  Controller,
-  Get,
-  Query,
-  Req,
-  Res,
-  UseGuards,
-  Post,
-  Body,
-  HttpCode,
-  HttpStatus,
-  Delete,
-} from '@nestjs/common';
+import { I_CONNECTION, I_FB_AUTH_RESPONSE, I_FB_PAGE_RESPONSE, I_USER } from '@interfaces';
+import { Controller, Get, Query, Req, Res, UseGuards, Post, Body, HttpCode, HttpStatus, Delete } from '@nestjs/common';
 import { UserHelper } from 'src/helper';
 
 @Controller('')
@@ -49,39 +32,22 @@ export class ConnectionController {
   @Get('getFBPages')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  getFBPages(
-    @Req() request: Request,
-    @Query('code') code: string,
-  ): Observable<I_FB_PAGE_RESPONSE> {
+  getFBPages(@Req() request: Request, @Query('code') code: string): Observable<I_FB_PAGE_RESPONSE> {
     const { authToken } = request.cookies,
       user = from(TokenUtil.verifyUser(authToken, this.configService)).pipe(
         switchMap((userInfo: Partial<I_USER>) => {
           const { email, _id } = userInfo;
-          return from(
-            UserHelper.findUserByEmailAndID(
-              this.userModel,
-              email as string,
-              _id,
-            ),
-          ).pipe(
-            map((response: Partial<I_USER>) =>
-              SanitizerUtil.sanitizedResponse(response),
-            ),
+          return from(UserHelper.findUserByEmailAndID(this.userModel, email as string, _id)).pipe(
+            map((response: Partial<I_USER>) => SanitizerUtil.sanitizedResponse(response)),
           );
         }),
       ),
-      authResponse$: Observable<I_FB_AUTH_RESPONSE> = this.connectionService.authorizeFacebook(
-        code,
-      ),
+      authResponse$: Observable<I_FB_AUTH_RESPONSE> = this.connectionService.authorizeFacebook(code),
       pages = authResponse$.pipe(
-        switchMap((authResponse: I_FB_AUTH_RESPONSE) =>
-          this.connectionService.getFBPages(authResponse),
-        ),
+        switchMap((authResponse: I_FB_AUTH_RESPONSE) => this.connectionService.getFBPages(authResponse)),
       );
 
-    return forkJoin({ user, pages }).pipe(
-      map((response: I_FB_PAGE_RESPONSE) => response),
-    );
+    return forkJoin({ user, pages }).pipe(map((response: I_FB_PAGE_RESPONSE) => response));
   }
 
   @Post('addFBPage')
@@ -101,9 +67,7 @@ export class ConnectionController {
   @Delete('delete')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  deleteConnection(
-    @Query('deletedID') deletedID: string,
-  ): Observable<I_CONNECTION> {
+  deleteConnection(@Query('deletedID') deletedID: string): Observable<I_CONNECTION> {
     return this.connectionService.deleteConnection(deletedID);
   }
 }

@@ -4,12 +4,7 @@ import { E_CONTEXT } from './context.enum';
 import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from './error-message.enum';
 import { E_POST_STATUS, E_POST_TYPE } from './post.enum';
 import { E_SANITIZE } from './sanitizer.enum';
-import {
-  E_ATTRIBUTION,
-  E_BUSINESS_TYPE,
-  E_COMPANY_SIZE,
-  E_SUBSCRIPTION_PLAN,
-} from './user.enum';
+import { E_ATTRIBUTION, E_BUSINESS_TYPE, E_COMPANY_SIZE, E_SUBSCRIPTION_PLAN } from './user.enum';
 
 export {
   E_APP_ENVIRONMENT,

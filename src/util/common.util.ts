@@ -3,16 +3,11 @@ import isJSON = require('is-json');
 
 export class CommonUtil {
   static isObject(val: any): boolean {
-    return (
-      val != null && typeof val === 'object' && Array.isArray(val) === false
-    );
+    return val != null && typeof val === 'object' && Array.isArray(val) === false;
   }
 
   static isObjectObject(obj: Record<string, any>): boolean {
-    return (
-      CommonUtil.isObject(obj) === true &&
-      Object.prototype.toString.call(obj) === '[object Object]'
-    );
+    return CommonUtil.isObject(obj) === true && Object.prototype.toString.call(obj) === '[object Object]';
   }
 
   static isPlainObject(obj: Record<string, any>): boolean {
@@ -40,11 +35,7 @@ export class CommonUtil {
   }
 
   static getSerializedJSON(obj: Record<string, any>): string {
-    const jsonStringify = stringify(
-      CommonUtil.isObject(obj) ? obj : {},
-      null,
-      2,
-    );
+    const jsonStringify = stringify(CommonUtil.isObject(obj) ? obj : {}, null, 2);
     return jsonStringify || '{}';
   }
 }

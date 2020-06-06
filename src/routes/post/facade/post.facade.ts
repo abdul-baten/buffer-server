@@ -1,88 +1,92 @@
-import { ConfigService } from '@nestjs/config';
-import { E_CONNECTION_TYPE } from '@enums';
-import { from, Observable } from 'rxjs';
-import { I_POST, I_POST_FILE, I_USER } from '@interfaces';
-import { Injectable } from '@nestjs/common';
-import { map, switchMap, tap } from 'rxjs/operators';
+import { catchError, map } from 'rxjs/operators';
+import { FacebookHelper } from '@helpers';
+import { forkJoin, Observable, of, from } from 'rxjs';
+import { I_POST } from '@interfaces';
+import { Injectable, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
 import { PostDTO } from '@dtos';
+import { PostMapper } from '@mappers';
 import { PostService } from '../service/post.service';
-import { promisifyAll } from 'bluebird';
-import { SanitizerUtil, TokenUtil } from '@utils';
-
-const Graph = require('fbgraph');
-promisifyAll(Graph);
+import { SanitizerUtil } from '@utils';
+import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP, E_CONNECTION_TYPE, E_POST_TYPE, E_POST_STATUS } from '@enums';
 
 @Injectable()
 export class PostFacade {
-  constructor(
-    private readonly configService: ConfigService,
-    private readonly postService: PostService,
-  ) {}
+  constructor(private readonly postService: PostService) {}
 
-  addFile(authToken: string, postMedia: any): Observable<I_POST_FILE> {
-    const userID$ = this.verifyToken(authToken);
+  async addPost(postInfo: PostDTO): Promise<I_POST> {
+    let connectionRequest$: Observable<any> = of(null);
+    const postRequest$ = this.postService.addPost(postInfo).pipe(
+        map((postInfo: I_POST) => SanitizerUtil.sanitizedResponse(postInfo)),
+        map((post: I_POST) => PostMapper.postResponseMapper(post)),
+        catchError(() => {
+          throw new UnprocessableEntityException(E_ERROR_MESSAGE.ADD_POST_ERROR, E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.ADD_POST_ERROR));
+        }),
+      ),
+      { postConnection, postType, postStatus } = postInfo;
 
-    const { filename: fileName, mimetype: fileMimeType } = postMedia;
-    const fileType = fileMimeType.split('/')[0];
-    const fileURL = fileName;
+    const connectionInfo = await this.postService.getConnection(postConnection),
+      { connectionID, connectionToken, connectionType } = connectionInfo;
 
-    return userID$.pipe(
-      switchMap((userInfo: I_USER) => {
-        const { _id: userID } = userInfo;
-        return this.postService.addFile({
-          fileType,
-          fileURL,
-          fileName,
-          fileMimeType,
-          userID,
-        });
+    if (postType === E_POST_TYPE.IMAGE) {
+      if (postStatus === E_POST_STATUS.PUBLISHED) {
+        switch (connectionType) {
+          case E_CONNECTION_TYPE.FACEBOOK_PAGE:
+          case E_CONNECTION_TYPE.FACEBOOK_GROUP:
+            connectionRequest$ = from(FacebookHelper.postImages(connectionID, connectionToken, postInfo)).pipe(map((response: any) => response));
+            break;
+
+          default:
+            connectionRequest$ = of(null);
+            break;
+        }
+      }
+    } else if (postType === E_POST_TYPE.VIDEO) {
+      switch (connectionType) {
+        case E_CONNECTION_TYPE.FACEBOOK_PAGE:
+        case E_CONNECTION_TYPE.FACEBOOK_GROUP:
+          connectionRequest$ = from(FacebookHelper.postVideo(connectionID, connectionToken, postInfo)).pipe(map((response: any) => response));
+          break;
+
+        default:
+          connectionRequest$ = of(null);
+          break;
+      }
+    } else {
+      if (postStatus === E_POST_STATUS.PUBLISHED) {
+        switch (connectionType) {
+          case E_CONNECTION_TYPE.FACEBOOK_PAGE:
+          case E_CONNECTION_TYPE.FACEBOOK_GROUP:
+            connectionRequest$ = from(FacebookHelper.postStatus(connectionID, connectionToken, postInfo.postCaption)).pipe(
+              map((response: any) => response),
+            );
+            break;
+
+          default:
+            connectionRequest$ = of(null);
+            break;
+        }
+      } else {
+        connectionRequest$ = of(null);
+      }
+    }
+
+    return forkJoin(postRequest$, connectionRequest$)
+      .pipe(map(([post]) => post))
+      .toPromise();
+  }
+
+  getPosts(userID: string): Observable<I_POST[]> {
+    return this.postService.getPosts(userID).pipe(
+      map((posts: I_POST[]) => {
+        return posts.map((post: I_POST) => SanitizerUtil.sanitizedResponse(post));
       }),
-      map((fileInfo: I_POST_FILE) => SanitizerUtil.sanitizedResponse(fileInfo)),
-      map((fileInfo: I_POST_FILE) => fileInfo),
-    );
-  }
-
-  addPost(postBody: PostDTO): Observable<I_POST> {
-    return this.postService.addPost(postBody).pipe(
-      tap((postInfo: I_POST) => {
-        const connections = postInfo.postConnection;
-        connections.map(async (id: string) => {
-          const connectionInfo = await this.postService.getConnection(id);
-
-          const {
-            connectionID,
-            connectionToken,
-            connectionType,
-          } = connectionInfo;
-
-          switch (connectionType) {
-            case E_CONNECTION_TYPE.FACEBOOK_PAGE:
-              this.postFacebookStatus(
-                connectionID,
-                connectionToken,
-                postInfo.postCaption,
-              );
-              break;
-          }
-        });
+      map((connections: I_POST[]) => {
+        return connections.map((connection: I_POST) => PostMapper.postResponseMapper(connection));
+      }),
+      map((connections: I_POST[]) => connections),
+      catchError(error => {
+        throw new InternalServerErrorException(error);
       }),
     );
-  }
-
-  verifyToken(authToken: string): Observable<Partial<I_USER>> {
-    return from(TokenUtil.verifyUser(authToken, this.configService));
-  }
-
-  postFacebookStatus(
-    connectionID: string,
-    connectionToken: string,
-    postCaption: string,
-  ) {
-    const params = {
-      message: postCaption,
-      access_token: connectionToken,
-    };
-
-    Graph.postAsync(`${connectionID}/feed`, params);
   }
 }
