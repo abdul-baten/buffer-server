@@ -1,0 +1,164 @@
+import { AddConnectionDTO } from '@dtos';
+import { catchError, defaultIfEmpty, map, pluck, tap } from 'rxjs/operators';
+import { ConfigService } from '@nestjs/config';
+import { ConnectionMapper } from '@mappers';
+import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
+import { from, Observable } from 'rxjs';
+import { I_CONNECTION, I_FB_AUTH_ERROR, I_FB_AUTH_RESPONSE, I_FB_PAGE, I_FB_GROUP } from '@interfaces';
+import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { InjectModel } from '@nestjs/mongoose';
+import { LoggerUtil, SanitizerUtil } from '@utils';
+import { Model } from 'mongoose';
+import { promisifyAll } from 'bluebird';
+
+const Graph = require('fbgraph');
+Graph.setVersion('6.0');
+
+promisifyAll(Graph);
+
+@Injectable()
+export class FacebookService {
+  private FB_CLIENT_ID = this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.CLIENT_ID') as string;
+  private FB_CLIENT_SECRET = this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.CLIENT_SECRET') as string;
+  private FB_REDIRECT_BASE_URL = this.configService.get<string>('SOCIAL_PLATFORM.REDIRECT_URL') as string;
+  private FB_SCOPE = this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.SCOPE') as string;
+  private FB_PAGE_PARAMS = this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.PAGE_PARAMS') as string;
+  private FB_GROUP_PARAMS = this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.GROUP_PARAMS') as string;
+
+  constructor(
+    private configService: ConfigService,
+    @InjectModel('Connection')
+    private readonly connectionModel: Model<I_CONNECTION>,
+  ) {}
+
+  private getFacebookSettings(
+    connectionType: string,
+  ): {
+    client_id: string;
+    redirect_uri: string;
+  } {
+    return {
+      client_id: this.FB_CLIENT_ID,
+      redirect_uri: `${this.FB_REDIRECT_BASE_URL}/${connectionType}`,
+    };
+  }
+
+  async authenticateFacebook(connectionType: string) {
+    const config = this.getFacebookSettings(connectionType);
+    try {
+      return Graph.getOauthUrl({
+        ...config,
+        scope: this.FB_SCOPE,
+      });
+    } catch (error) {
+      LoggerUtil.logInfo(error);
+    }
+  }
+
+  authorizeFacebook(code: string, connectionType: string): Observable<I_FB_AUTH_RESPONSE> {
+    const config = this.getFacebookSettings(connectionType);
+    return from(
+      Graph.authorizeAsync({
+        ...config,
+        client_secret: this.FB_CLIENT_SECRET,
+        code,
+      }),
+    ).pipe(
+      map((authResponse: I_FB_AUTH_RESPONSE) => authResponse),
+      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+    );
+  }
+
+  private getFacebookPages(accessToken: string): Observable<any> {
+    const params = {
+      access_token: accessToken,
+      fields: this.FB_PAGE_PARAMS,
+    };
+
+    return from(Graph.getAsync('me/accounts', params)).pipe(
+      map(response => response),
+      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+    );
+  }
+
+  private getFacebookGroups(accessToken: string): Observable<any> {
+    const params = {
+      access_token: accessToken,
+      fields: this.FB_GROUP_PARAMS,
+      admin_only: true,
+    };
+
+    return from(Graph.getAsync('me/groups', params)).pipe(
+      map(response => response),
+      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+    );
+  }
+
+  private mapFBPages(response: I_FB_PAGE[]): I_CONNECTION[] {
+    const pagesList: I_CONNECTION[] = [];
+    response.forEach((page: I_FB_PAGE) => {
+      pagesList.push(ConnectionMapper.fbPageResponseMapper(page));
+    });
+    return pagesList;
+  }
+
+  getFBPages(authResponse: I_FB_AUTH_RESPONSE): Observable<I_CONNECTION[]> {
+    const pageListObservabe$ = this.getFacebookPages(authResponse.access_token);
+    return pageListObservabe$.pipe(
+      map(response => response),
+      pluck('data'),
+      map((response: I_FB_PAGE[]) => this.mapFBPages(response)),
+      defaultIfEmpty([]),
+      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+    );
+  }
+
+  private mapFBGroups(response: I_FB_GROUP[], accessToken: string): I_CONNECTION[] {
+    const pagesList: I_CONNECTION[] = [];
+    response.forEach((page: I_FB_GROUP) => {
+      page.access_token = accessToken;
+      pagesList.push(ConnectionMapper.fbGroupResponseMapper(page));
+    });
+    return pagesList;
+  }
+
+  getFBGroups(authResponse: I_FB_AUTH_RESPONSE): Observable<I_CONNECTION[]> {
+    const pageListObservabe$ = this.getFacebookGroups(authResponse.access_token);
+    return pageListObservabe$.pipe(
+      map(response => response),
+      pluck('data'),
+      tap(console.warn),
+      map((response: I_FB_GROUP[]) => this.mapFBGroups(response, authResponse.access_token)),
+      defaultIfEmpty([]),
+      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+    );
+  }
+
+  addFBPage(addFBPageDTO: AddConnectionDTO): Observable<I_CONNECTION> {
+    const connection = new this.connectionModel(addFBPageDTO);
+    return from(connection.save()).pipe(
+      map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection)),
+      map((connection: I_CONNECTION) => ConnectionMapper.connectionsResponseMapper(connection)),
+      catchError(error => {
+        throw new InternalServerErrorException(error);
+      }),
+    );
+  }
+
+  catchFBError(error: I_FB_AUTH_ERROR): Observable<any> {
+    LoggerUtil.logError(JSON.stringify(error));
+    switch (error.code) {
+      case 100:
+        throw new InternalServerErrorException(
+          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR),
+          E_ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR,
+        );
+
+      case 191:
+        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR), E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR);
+
+      default:
+        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_OAUTH_ERROR), E_ERROR_MESSAGE.FB_OAUTH_ERROR);
+    }
+  }
+}

@@ -15,36 +15,36 @@ export const ConnectionDefinition: SchemaDefinition = {
     ],
     trim: true,
     type: String,
-    required: [true, 'Connection Type is required.'],
+    required: [true, 'Connection Type is required!'],
   },
   connectionID: {
     type: String,
-    required: [true, 'Connection ID is required.'],
+    required: [true, 'Connection ID is required!'],
   },
   connectionName: {
     type: String,
-    required: [true, 'Connection Name is required.'],
+    required: [true, 'Connection Name is required!'],
   },
   connectionCategory: {
     type: String,
-    required: [true, 'Connection Category is required.'],
+    required: false,
   },
   connectionStatus: {
     enum: [E_CONNECTION_STATUS.DISABLED, E_CONNECTION_STATUS.ENABLED],
     type: String,
-    required: [true, 'Connection Status is required.'],
+    required: [true, 'Connection Status is required!'],
   },
   connectionPicture: {
     type: String,
-    required: [true, 'Connection Picture is required.'],
+    required: [true, 'Connection Picture is required!'],
   },
   connectionToken: {
     type: String,
-    required: [true, 'Connection Token is required.'],
+    required: [true, 'Connection Token is required!'],
   },
   connectionUserID: {
     type: Types.ObjectId,
-    required: [true, 'Connection User ID is required.'],
+    required: [true, 'Connection User ID is required!'],
   },
   connectionAdded: {
     type: Date,

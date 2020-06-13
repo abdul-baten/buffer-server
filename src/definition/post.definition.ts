@@ -1,4 +1,4 @@
-import { E_POST_STATUS, E_POST_TYPE } from '@enums';
+import { E_POST_STATUS, E_POST_TYPE, E_CONNECTION_TYPE } from '@enums';
 import { SchemaDefinition, Types } from 'mongoose';
 
 export const PostDefinition: SchemaDefinition = {
@@ -8,14 +8,33 @@ export const PostDefinition: SchemaDefinition = {
     type: String,
   },
   postConnection: {
-    type: Types.ObjectId,
-    ref: 'Connection',
-    required: [true, 'Post Connection is required!'],
+    connectionID: {
+      type: String,
+      required: [true, 'Post Connection ID is required!'],
+    },
+    connectionType: {
+      enum: [
+        E_CONNECTION_TYPE.FACEBOOK_PAGE,
+        E_CONNECTION_TYPE.FACEBOOK_GROUP,
+        E_CONNECTION_TYPE.INSTAGRAM_BUSINESS,
+        E_CONNECTION_TYPE.INSTAGRAM_PERSONAL,
+        E_CONNECTION_TYPE.LINKEDIN_PAGE,
+        E_CONNECTION_TYPE.LINKEDIN_PROFILE,
+        E_CONNECTION_TYPE.PINTEREST,
+        E_CONNECTION_TYPE.TWITTER,
+      ],
+      trim: true,
+      type: String,
+      required: [true, 'Post Connection Type is required!'],
+    },
+    connectionToken: {
+      type: String,
+      required: [true, 'Post Connection Token is required!'],
+    },
   },
-  postScheduleDate: {
+  postScheduleDateTime: {
     required: [true, 'Post Date is required!'],
-    type: Date,
-    default: Date.now(),
+    type: String,
   },
   postMedia: [
     {
@@ -29,11 +48,6 @@ export const PostDefinition: SchemaDefinition = {
     trim: true,
     type: String,
     required: [true, 'Post Status is required!'],
-  },
-  postScheduleTime: {
-    trim: true,
-    type: String,
-    required: [true, 'Post Time is required!'],
   },
   postType: {
     enum: [E_POST_TYPE.IMAGE, E_POST_TYPE.TEXT, E_POST_TYPE.VIDEO],

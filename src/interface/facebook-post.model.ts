@@ -5,3 +5,11 @@ export interface I_FB_PAGE {
   name: string;
   picture: string;
 }
+
+export interface I_FB_GROUP {
+  access_token: string;
+  id: string;
+  name: string;
+  picture: string;
+  privacy: string;
+}

@@ -1,6 +1,6 @@
 import * as jsonTransformer from 'jsonata';
 import { E_CONNECTION_TYPE } from '@enums';
-import { I_CONNECTION, I_FB_PAGE } from '@interfaces';
+import { I_CONNECTION, I_FB_GROUP, I_FB_PAGE } from '@interfaces';
 
 export class ConnectionMapper {
   static fbPageResponseMapper(pageInfo: Partial<I_FB_PAGE>): I_CONNECTION {
@@ -11,6 +11,19 @@ export class ConnectionMapper {
         "connectionName": $.name,
         "connectionPicture": $.picture.data.url,
         "connectionNetwork": ${E_CONNECTION_TYPE.FACEBOOK_PAGE}
+    }`;
+
+    return jsonTransformer(response).evaluate(pageInfo);
+  }
+
+  static fbGroupResponseMapper(pageInfo: I_FB_GROUP): I_CONNECTION {
+    const response = `{
+        "connectionToken": $.access_token,
+        "connectionCategory": $.privacy,
+        "connectionID": $.id,
+        "connectionName": $.name,
+        "connectionPicture": $.picture.data.url,
+        "connectionNetwork": ${E_CONNECTION_TYPE.FACEBOOK_GROUP}
     }`;
 
     return jsonTransformer(response).evaluate(pageInfo);

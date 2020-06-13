@@ -14,7 +14,7 @@ export class PostService {
     private readonly connectionModel: Model<I_CONNECTION>,
   ) {}
 
-  addPost(postBody: PostDTO): Observable<I_POST> {
+  addPost(postBody: PostDTO | I_POST): Observable<I_POST> {
     const post = new this.postModel(postBody);
     return from(post.save());
   }

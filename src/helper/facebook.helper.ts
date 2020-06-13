@@ -80,8 +80,7 @@ export class FacebookHelper {
       qs: {
         access_token: connectionToken,
         description: postInfo.postCaption,
-        file_url:
-          'https://v16m.tiktokcdn.com/74d0ba7f1b788b99833c929118ea1002/5edc277e/video/tos/useast2a/tos-useast2a-ve-0068c001/3b8f7e6e7a384e41beeeb537dc6258fb/?a=1233&br=2210&bt=1105&cr=0&cs=0&dr=0&ds=3&er=&l=202006061731590101890730773D18EE50&lr=tiktok_m&mime_type=video_mp4&qs=0&rc=andydzNtZ2tzdTMzZDczM0ApNGRpNDtmOGVoNzc7NTY2NGdnZGEzcWo1bGFfLS1jMTZzczMvMGM2NjAxYWJhNTFgXzI6Yw%3D%3D&vl=&vr=',
+        file_url: 'https://static.videezy.com/system/resources/previews/000/011/317/original/openning_small_can.mp4',
       },
     };
 
@@ -95,7 +94,7 @@ export class FacebookHelper {
       .toPromise();
   }
 
-  private static catchFBError(error: I_FB_AUTH_ERROR): Observable<any> {
+  static catchFBError(error: I_FB_AUTH_ERROR): Observable<any> {
     LoggerUtil.logError(JSON.stringify(error));
 
     switch (error.code) {
@@ -113,6 +112,9 @@ export class FacebookHelper {
 
       case 324:
         throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_MEDIA_TOO_LARGE), E_ERROR_MESSAGE.FB_MEDIA_TOO_LARGE);
+
+      case 368:
+        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_TOO_MANY_REQUESTS), E_ERROR_MESSAGE.FB_TOO_MANY_REQUESTS);
 
       case 390:
         throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_MEDIA_MISSING), E_ERROR_MESSAGE.FB_MEDIA_MISSING);

@@ -5,12 +5,11 @@ import { I_CONNECTION, I_MEDIA } from '@interfaces';
 export interface I_POST extends Document {
   id: string;
   postCaption: string;
-  postConnection: I_CONNECTION['id'];
+  postConnection: Partial<I_CONNECTION>;
   postDate: string;
   postMedia?: I_MEDIA['id'][];
-  postScheduleDate: Date;
+  postScheduleDateTime: Date;
   postStatus: E_POST_STATUS;
-  postTime: string;
   postType: E_POST_TYPE;
   userID: string;
 }

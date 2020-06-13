@@ -10,8 +10,7 @@ export class PostMapper {
       "postConnection": $.postConnection,
       "postDate": $.postDate,
       "postMedia": $.postMedia,
-      "postScheduleDate": $.postScheduleDate,
-      "postScheduleTime": $.postScheduleTime,
+      "postScheduleDateTime": $.postScheduleDateTime,
       "postStatus": $.postStatus,
       "postType": $.postType,
       "userID": $.userID

@@ -14,8 +14,8 @@ export class LoggerUtil extends Logger {
 
   private static formatParams = printf(({ level, message }): string => {
     const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
-    const logID = context.correlationID ?? 'no-correlation-id-set';
-    const timestamp = context.date ?? new Date().toISOString();
+    const logID = context && context.correlationID ? context.correlationID : 'no-correlation-id-set';
+    const timestamp = context && context.date ? context.date : new Date().toISOString();
 
     return `${timestamp} ${logID} ${level}: ${message}`;
   });
@@ -28,12 +28,7 @@ export class LoggerUtil extends Logger {
     LoggerUtil.formatParams,
   );
 
-  private static fileFormat = combine(
-    timestamp(),
-    label({ label: configuration.default.LOGGING.LABEL }),
-    align(),
-    LoggerUtil.formatParams,
-  );
+  private static fileFormat = combine(timestamp(), label({ label: configuration.default.LOGGING.LABEL }), align(), LoggerUtil.formatParams);
 
   private static errorLogDailyRotate = new DailyRotateFile({
     level: 'error',
@@ -52,11 +47,7 @@ export class LoggerUtil extends Logger {
   private static logger = createLogger({
     level: configuration.default.LOGGING.LEVEL,
     exitOnError: false,
-    transports: [
-      new transports.Console({ format: LoggerUtil.consoleFormat }),
-      LoggerUtil.errorLogDailyRotate,
-      LoggerUtil.combinedLogDailyRotate,
-    ],
+    transports: [new transports.Console({ format: LoggerUtil.consoleFormat }), LoggerUtil.errorLogDailyRotate, LoggerUtil.combinedLogDailyRotate],
   });
 
   static logError(error: any) {

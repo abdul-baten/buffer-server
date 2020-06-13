@@ -1,5 +1,5 @@
 import { E_CONNECTION_STATUS, E_CONNECTION_TYPE } from '@enums';
-import { IsDefined, IsEnum, IsString } from 'class-validator';
+import { IsDefined, IsEnum, IsOptional, IsString } from 'class-validator';
 
 export class AddConnectionDTO {
   @IsDefined()
@@ -8,6 +8,7 @@ export class AddConnectionDTO {
 
   @IsDefined()
   @IsString()
+  @IsOptional()
   readonly connectionCategory: string;
 
   @IsDefined()

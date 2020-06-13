@@ -1,6 +1,6 @@
 import { E_POST_STATUS, E_POST_TYPE } from '@enums';
-import { I_MEDIA } from '@interfaces';
-import { IsArray, IsDefined, IsEnum, IsOptional, IsString } from 'class-validator';
+import { I_CONNECTION } from '@interfaces';
+import { IsArray, IsDefined, IsEnum, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
 
 export class PostDTO {
   @IsDefined()
@@ -8,20 +8,17 @@ export class PostDTO {
   readonly postCaption: string;
 
   @IsDefined()
-  @IsArray()
-  readonly postConnection: string;
+  @IsObject({ each: true })
+  @ValidateNested({ each: true })
+  readonly postConnection: Partial<I_CONNECTION>;
 
   @IsOptional()
   @IsArray()
-  readonly postMedia: I_MEDIA['id'][];
+  readonly postMedia: string[];
 
   @IsDefined()
   @IsString()
-  readonly postScheduleDate: string;
-
-  @IsDefined()
-  @IsString()
-  readonly postScheduleTime: string;
+  readonly postScheduleDateTime: string;
 
   @IsDefined()
   @IsEnum(E_POST_STATUS)

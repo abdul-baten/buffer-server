@@ -33,8 +33,9 @@ const config = {
     FACEBOOK: {
       CLIENT_ID: '466314977585281',
       CLIENT_SECRET: '8628ebbe08dab12d34b5860df4336037',
-      SCOPE: 'manage_pages, pages_show_list, read_insights, publish_video, publish_pages, public_profile',
-      REDIRECT_URL: 'https://localhost:5000/oauth/facebook',
+      SCOPE:
+        'read_insights, publish_video, pages_show_list, ads_read, business_management, publish_to_groups, groups_access_member_info, pages_read_engagement, pages_manage_metadata, pages_read_user_content, pages_manage_ads, pages_manage_posts, pages_manage_engagement, public_profile',
+      REDIRECT_URL: 'https://localhost:5000/connection',
     },
   },
 };
