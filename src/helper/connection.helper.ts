@@ -21,6 +21,11 @@ export class ConnectionHelper {
     return from(connections);
   }
 
+  static addConnection(connectionModel: Model<I_CONNECTION>, connection: I_CONNECTION): Observable<I_CONNECTION> {
+    const addedConnection = new connectionModel(connection);
+    return from(addedConnection.save());
+  }
+
   static deleteConnection(connectionModel: Model<I_CONNECTION>, _id: string): Observable<I_CONNECTION> {
     const deletedConnection = connectionModel
       .findByIdAndDelete({ _id })

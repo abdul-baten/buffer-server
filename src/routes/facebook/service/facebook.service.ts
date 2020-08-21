@@ -1,14 +1,11 @@
-import { AddConnectionDTO } from '@dtos';
 import { catchError, defaultIfEmpty, map, pluck, tap } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
 import { ConnectionMapper } from '@mappers';
 import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
 import { from, Observable } from 'rxjs';
-import { I_CONNECTION, I_FB_AUTH_ERROR, I_FB_AUTH_RESPONSE, I_FB_PAGE, I_FB_GROUP } from '@interfaces';
+import { I_CONNECTION, I_FB_AUTH_ERROR, I_FB_AUTH_RESPONSE, I_FB_GROUP, I_FB_PAGE } from '@interfaces';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { LoggerUtil, SanitizerUtil } from '@utils';
-import { Model } from 'mongoose';
+import { LoggerUtil } from '@utils';
 import { promisifyAll } from 'bluebird';
 
 const Graph = require('fbgraph');
@@ -25,11 +22,7 @@ export class FacebookService {
   private FB_PAGE_PARAMS = this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.PAGE_PARAMS') as string;
   private FB_GROUP_PARAMS = this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.GROUP_PARAMS') as string;
 
-  constructor(
-    private configService: ConfigService,
-    @InjectModel('Connection')
-    private readonly connectionModel: Model<I_CONNECTION>,
-  ) {}
+  constructor(private readonly configService: ConfigService) {}
 
   private getFacebookSettings(
     connectionType: string,
@@ -131,17 +124,6 @@ export class FacebookService {
       map((response: I_FB_GROUP[]) => this.mapFBGroups(response, authResponse.access_token)),
       defaultIfEmpty([]),
       catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
-    );
-  }
-
-  addFBPage(addFBPageDTO: AddConnectionDTO): Observable<I_CONNECTION> {
-    const connection = new this.connectionModel(addFBPageDTO);
-    return from(connection.save()).pipe(
-      map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection)),
-      map((connection: I_CONNECTION) => ConnectionMapper.connectionsResponseMapper(connection)),
-      catchError(error => {
-        throw new InternalServerErrorException(error);
-      }),
     );
   }
 

@@ -1,4 +1,3 @@
-import { AddConnectionDTO } from '@dtos';
 import { catchError, defaultIfEmpty, map, pluck } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
 import { ConnectionMapper } from '@mappers';
@@ -6,9 +5,7 @@ import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
 import { from, Observable } from 'rxjs';
 import { I_CONNECTION, I_FB_AUTH_ERROR, I_FB_AUTH_RESPONSE, I_FB_PAGE } from '@interfaces';
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { InjectModel } from '@nestjs/mongoose';
-import { LoggerUtil, SanitizerUtil } from '@utils';
-import { Model } from 'mongoose';
+import { LoggerUtil } from '@utils';
 import { promisifyAll } from 'bluebird';
 
 const Graph = require('fbgraph');
@@ -18,11 +15,7 @@ promisifyAll(Graph);
 
 @Injectable()
 export class FacebookFacade {
-  constructor(
-    private configService: ConfigService,
-    @InjectModel('Connection')
-    private readonly connectionModel: Model<I_CONNECTION>,
-  ) {}
+  constructor(private configService: ConfigService) {}
 
   private getFacebookSettings(): {
     client_id: string;
@@ -89,17 +82,6 @@ export class FacebookFacade {
       map((response: I_FB_PAGE[]) => this.mapFBPages(response)),
       defaultIfEmpty([]),
       catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
-    );
-  }
-
-  addFBPage(addFBPageDTO: AddConnectionDTO): Observable<I_CONNECTION> {
-    const connection = new this.connectionModel(addFBPageDTO);
-    return from(connection.save()).pipe(
-      map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection)),
-      map((connection: I_CONNECTION) => connection),
-      catchError(error => {
-        throw new InternalServerErrorException(error);
-      }),
     );
   }
 

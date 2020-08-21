@@ -1,6 +1,7 @@
+import { AddConnectionDTO } from '@dtos';
 import { AuthGuard } from '@guards';
+import { Body, Controller, Delete, Get, HttpCode, HttpStatus, Post, Query, UseGuards } from '@nestjs/common';
 import { ConnectionFacade } from '../facade/connection.facade';
-import { Controller, Delete, Get, HttpCode, HttpStatus, Query, UseGuards } from '@nestjs/common';
 import { I_CONNECTION } from '@interfaces';
 import { Observable } from 'rxjs';
 
@@ -13,6 +14,13 @@ export class ConnectionController {
   @HttpCode(HttpStatus.OK)
   getConnections(@Query('userID') userID: string): Observable<I_CONNECTION[]> {
     return this.connectionFacade.getConnections(userID);
+  }
+
+  @Post('add')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  addFBPage(@Body() connectionDTO: AddConnectionDTO): Observable<I_CONNECTION> {
+    return this.connectionFacade.addConnection(connectionDTO);
   }
 
   @Delete('delete')

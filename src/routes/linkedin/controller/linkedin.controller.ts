@@ -1,6 +1,5 @@
-import { AddConnectionDTO } from '@dtos';
 import { AuthGuard } from '@guards';
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Redirect, UseGuards } from '@nestjs/common';
+import { Controller, Get, HttpCode, HttpStatus, Query, Redirect, UseGuards } from '@nestjs/common';
 import { I_CONNECTION, I_LN_ACCESS_TOKEN_RESPONSE } from '@interfaces';
 import { LinkedInFacade } from '../facade/linkedin.facade';
 import { Observable } from 'rxjs';
@@ -32,12 +31,5 @@ export class LinkedInController {
   getUserInfo(@Query('accessToken') accessToken: string): Observable<I_CONNECTION> {
     const userInfoResponse$ = this.linkedInFacade.getUserInfo(accessToken);
     return userInfoResponse$;
-  }
-
-  @Post('profile')
-  @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  addLinkedInProfile(@Body() addFBPageDTO: AddConnectionDTO): Observable<I_CONNECTION> {
-    return this.linkedInFacade.addLinkedInProfile(addFBPageDTO);
   }
 }

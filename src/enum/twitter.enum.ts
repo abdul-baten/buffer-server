@@ -1,0 +1,5 @@
+export enum E_TW_UPLOAD_COMMAND {
+  INIT = 'INIT',
+  APPEND = 'APPEND',
+  FINALIZE = 'FINALIZE',
+}

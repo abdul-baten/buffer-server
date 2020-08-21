@@ -1,6 +1,6 @@
 import { catchError, map } from 'rxjs/operators';
 import { E_CONNECTION_TYPE, E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP, E_POST_STATUS, E_POST_TYPE } from '@enums';
-import { FacebookHelper, LinkedInHelper } from '@helpers';
+import { FacebookHelper, LinkedInHelper, TwitterHelper } from '@helpers';
 import { forkJoin, from, Observable, of } from 'rxjs';
 import { I_POST } from '@interfaces';
 import { Injectable, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
@@ -77,6 +77,10 @@ export class PostFacade {
             );
             break;
 
+          case E_CONNECTION_TYPE.TWITTER:
+            connectionRequest$ = from(TwitterHelper.postImages(postInfo, connectionToken)).pipe(map((response: any) => response));
+            break;
+
           default:
             connectionRequest$ = of(null);
             break;
@@ -91,9 +95,13 @@ export class PostFacade {
             break;
 
           case E_CONNECTION_TYPE.LINKEDIN_PROFILE:
-            connectionRequest$ = from(LinkedInHelper.postProfileMedia(postInfo, connectionID, connectionToken)).pipe(
+            connectionRequest$ = from(LinkedInHelper.postProfileVideo(postInfo, connectionID, connectionToken)).pipe(
               map((response: any) => response),
             );
+            break;
+
+          case E_CONNECTION_TYPE.TWITTER:
+            connectionRequest$ = from(TwitterHelper.postVideos(postInfo, connectionToken)).pipe(map((response: any) => response));
             break;
 
           default:
@@ -115,6 +123,10 @@ export class PostFacade {
             connectionRequest$ = from(LinkedInHelper.postProfileStatus(connectionID, connectionToken, postInfo.postCaption)).pipe(
               map((response: any) => response),
             );
+            break;
+
+          case E_CONNECTION_TYPE.TWITTER:
+            connectionRequest$ = from(TwitterHelper.postStatus(postInfo.postCaption, connectionToken)).pipe(map((response: any) => response));
             break;
 
           default:

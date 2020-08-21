@@ -1,13 +1,12 @@
-import { AddConnectionDTO } from '@dtos';
 import { AuthGuard } from '@guards';
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, Req, Res, UseGuards } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
+import { Controller, Get, HttpCode, HttpStatus, Query, Req, Res, UseGuards } from '@nestjs/common';
+import { FacebookService } from '../service/facebook.service';
 import { forkJoin, from, Observable } from 'rxjs';
-import { I_CONNECTION, I_FB_AUTH_RESPONSE, I_FB_PAGE_RESPONSE, I_USER } from '@interfaces';
+import { I_FB_AUTH_RESPONSE, I_FB_PAGE_RESPONSE, I_USER } from '@interfaces';
 import { InjectModel } from '@nestjs/mongoose';
 import { map, switchMap, tap } from 'rxjs/operators';
 import { Model } from 'mongoose';
-import { FacebookService } from '../service/facebook.service';
 import { Request, Response } from 'express';
 import { SanitizerUtil, TokenUtil } from '@utils';
 import { UserHelper } from '@helpers';
@@ -67,19 +66,5 @@ export class FacebookController {
       tap(console.warn),
       map((response: I_FB_PAGE_RESPONSE) => response),
     );
-  }
-
-  @Post('facebook-page')
-  @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  addFBPage(@Body() addFBPageDTO: AddConnectionDTO): Observable<I_CONNECTION> {
-    return this.profileService.addFBPage(addFBPageDTO);
-  }
-
-  @Post('facebook-group')
-  @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  addFBGroup(@Body() addFBPageDTO: AddConnectionDTO): Observable<I_CONNECTION> {
-    return this.profileService.addFBPage(addFBPageDTO);
   }
 }

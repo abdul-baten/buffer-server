@@ -1,3 +1,4 @@
+import { AddConnectionDTO } from '@dtos';
 import { catchError, map } from 'rxjs/operators';
 import { ConnectionMapper } from '@mappers';
 import { ConnectionService } from '../service/connection.service';
@@ -20,6 +21,16 @@ export class ConnectionFacade {
         return connections.map((connection: I_CONNECTION) => ConnectionMapper.connectionsResponseMapper(connection));
       }),
       map((connections: I_CONNECTION[]) => connections),
+      catchError(error => {
+        throw new InternalServerErrorException(error);
+      }),
+    );
+  }
+
+  addConnection(connectionDTO: AddConnectionDTO): Observable<I_CONNECTION> {
+    return this.connectionService.addConnection(connectionDTO).pipe(
+      map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection)),
+      map((connection: I_CONNECTION) => ConnectionMapper.connectionsResponseMapper(connection)),
       catchError(error => {
         throw new InternalServerErrorException(error);
       }),

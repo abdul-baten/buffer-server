@@ -19,6 +19,9 @@ enum E_ERROR_MESSAGE {
   FB_TOO_MANY_REQUESTS = '1008',
   ADD_POST_ERROR = '10',
 
+  TW_AUTHENTICATE_ERROR = '32',
+  TW_INVALID_MEDIA_ERROR = '324',
+
   CONNECTION_DELETE_ERROR = '10000',
 }
 
@@ -43,6 +46,8 @@ const E_ERROR_MESSAGE_MAP = new Map([
   [E_ERROR_MESSAGE.SESSION_EXPIRED_CODE, 'Session has expired. Please login again.'],
   [E_ERROR_MESSAGE.UNAUTHORISED_ERROR, 'Authorization failed. Please login again.'],
   [E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND, 'A user with this email is not found.'],
+  [E_ERROR_MESSAGE.TW_AUTHENTICATE_ERROR, 'Could not authenticate. Please try again.'],
+  [E_ERROR_MESSAGE.TW_INVALID_MEDIA_ERROR, 'Media file is missing. Please try again.'],
 ]);
 
 export { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP };

@@ -4,14 +4,7 @@ import { ErrorMapper } from './error.mapper';
 import { LinkedInMapper } from './linkedin.mapper';
 import { MediaMapper } from './media.mapper';
 import { PostMapper } from './post.mapper';
+import { TwitterMapper } from './twitter.mapper';
 import { UserMapper } from './user.mapper';
 
-export {
-  AuthMapper,
-  ConnectionMapper,
-  ErrorMapper,
-  LinkedInMapper,
-  MediaMapper,
-  PostMapper,
-  UserMapper,
-};
+export { AuthMapper, ConnectionMapper, ErrorMapper, LinkedInMapper, MediaMapper, PostMapper, TwitterMapper, UserMapper };

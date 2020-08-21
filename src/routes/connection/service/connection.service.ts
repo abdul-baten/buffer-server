@@ -1,3 +1,4 @@
+import { AddConnectionDTO } from '@dtos';
 import { ConnectionHelper } from '@helpers';
 import { I_CONNECTION } from '@interfaces';
 import { Injectable } from '@nestjs/common';
@@ -15,6 +16,11 @@ export class ConnectionService {
   getConnections(userID: string): Observable<I_CONNECTION[]> {
     const connections$ = ConnectionHelper.getConnectionsByUserID(this.connectionModel, userID);
     return connections$;
+  }
+
+  addConnection(connectionDTO: AddConnectionDTO): Observable<I_CONNECTION> {
+    const addedConnection = ConnectionHelper.addConnection(this.connectionModel, connectionDTO as I_CONNECTION);
+    return addedConnection;
   }
 
   deleteConnection(deletedID: string): Observable<I_CONNECTION> {

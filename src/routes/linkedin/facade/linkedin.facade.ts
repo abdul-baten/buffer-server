@@ -1,12 +1,10 @@
-import { AddConnectionDTO } from '@dtos';
-import { catchError, map } from 'rxjs/operators';
 import { E_CONNECTION_TYPE } from '@enums';
-import { from, Observable } from 'rxjs';
 import { I_CONNECTION, I_LN_ACCESS_TOKEN_RESPONSE } from '@interfaces';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { LinkedInMapper, ConnectionMapper } from '@mappers';
+import { Injectable } from '@nestjs/common';
+import { LinkedInMapper } from '@mappers';
 import { LinkedInService } from '../service/linkedin.service';
-import { SanitizerUtil } from '@utils';
+import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Injectable()
 export class LinkedInFacade {
@@ -27,17 +25,6 @@ export class LinkedInFacade {
         userResponse.accessToken = accessToken;
         userResponse.connectionNetwork = E_CONNECTION_TYPE.LINKEDIN_PROFILE;
         return LinkedInMapper.lnProfileResponseMapper(userResponse);
-      }),
-    );
-  }
-
-  addLinkedInProfile(addLNProfileDTO: AddConnectionDTO): Observable<I_CONNECTION> {
-    const connectionInfo$ = this.linkedInService.addLinkedInProfile(addLNProfileDTO);
-    return from(connectionInfo$).pipe(
-      map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection)),
-      map((connection: I_CONNECTION) => ConnectionMapper.connectionsResponseMapper(connection)),
-      catchError(error => {
-        throw new InternalServerErrorException(error);
       }),
     );
   }

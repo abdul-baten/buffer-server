@@ -13,7 +13,12 @@ export class PostMapper {
       "postScheduleDateTime": $.postScheduleDateTime,
       "postStatus": $.postStatus,
       "postType": $.postType,
-      "userID": $.userID
+      "userID": $.userID,
+      "start": $.postScheduleDateTime,
+      "allDay": false,
+      "editable": true,
+      "overlap": true,
+      "hasEnd": false
     }
     `;
 

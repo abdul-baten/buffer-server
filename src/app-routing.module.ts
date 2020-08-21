@@ -6,6 +6,7 @@ import { MediaModule } from './routes/media/media.module';
 import { Module } from '@nestjs/common';
 import { PostModule } from '@routes/post/post.module';
 import { RouterModule, Routes } from 'nest-router';
+import { TwitterModule } from '@routes/twitter/twitter.module';
 import { UserModule } from '@routes/user/user.module';
 
 const routes: Routes = [
@@ -37,9 +38,23 @@ const routes: Routes = [
     module: LinkedInModule,
     path: 'linkedin',
   },
+  {
+    module: TwitterModule,
+    path: 'twitter',
+  },
 ];
 
 @Module({
-  imports: [AuthModule, ConnectionModule, LinkedInModule, MediaModule, PostModule, FacebookModule, RouterModule.forRoutes(routes), UserModule],
+  imports: [
+    AuthModule,
+    ConnectionModule,
+    FacebookModule,
+    LinkedInModule,
+    MediaModule,
+    PostModule,
+    RouterModule.forRoutes(routes),
+    TwitterModule,
+    UserModule,
+  ],
 })
 export class AppRoutingModule {}

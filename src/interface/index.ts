@@ -7,6 +7,7 @@ import { I_LN_ACCESS_TOKEN_RESPONSE, I_LN_SUCCESS_RESPONSE } from './linkedin.in
 import { I_MEDIA } from './media.interface';
 import { I_POST } from './post.interface';
 import { I_SUBSCRIPTION_PLAN, I_USER } from './user.interface';
+import { I_TW_ACCESS_TOKEN_RESPONSE, I_TW_ERROR_RESPONSE, I_TW_MEDIA_UPLOAD_RESPONSE } from './twitter.interface';
 
 export {
   I_CONNECTION,
@@ -22,5 +23,8 @@ export {
   I_MEDIA,
   I_POST,
   I_SUBSCRIPTION_PLAN,
+  I_TW_ACCESS_TOKEN_RESPONSE,
+  I_TW_ERROR_RESPONSE,
+  I_TW_MEDIA_UPLOAD_RESPONSE,
   I_USER,
 };

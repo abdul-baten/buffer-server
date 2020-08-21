@@ -61,7 +61,8 @@ export class LinkedInHelper {
   static async getUserInfo(accessToken: string): Promise<any> {
     const userInfoRequest = {
       method: 'GET',
-      uri: 'https://api.linkedin.com/v2/me?projection=(id,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))',
+      uri:
+        'https://api.linkedin.com/v2/me?projection=(id,organizations,company,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))',
       headers: {
         Authorization: `Bearer ${accessToken} `,
       },
@@ -154,6 +155,91 @@ export class LinkedInHelper {
 
   static async postProfileMedia(postInfo: PostDTO, connectionID: string, connectionToken: string): Promise<any> {
     const media = await this.registerMedia(postInfo, connectionID, connectionToken);
+
+    const lnPostRequest = {
+      method: 'POST',
+      uri: 'https://api.linkedin.com/v2/ugcPosts',
+      headers: {
+        'X-Restli-Protocol-Version': '2.0.0',
+        Authorization: `Bearer ${connectionToken}`,
+      },
+      body: {
+        author: `urn:li:person:${connectionID}`,
+        lifecycleState: 'PUBLISHED',
+        specificContent: {
+          'com.linkedin.ugc.ShareContent': {
+            shareCommentary: {
+              text: postInfo.postCaption,
+            },
+            shareMediaCategory: postInfo.postType.toUpperCase(),
+            media,
+          },
+        },
+        visibility: {
+          'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+        },
+      },
+      json: true,
+    };
+
+    const response = await requestPromise(lnPostRequest);
+    return response;
+  }
+
+  static async registerVideoMedia(postInfo: PostDTO, connectionID: string, connectionToken: string) {
+    try {
+      const parallelRequests: any[] = [];
+
+      for (let media of postInfo.postMedia) {
+        const registerMediaRequest = {
+          method: 'POST',
+          uri: 'https://api.linkedin.com/v2/assets?action=registerUpload',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-Restli-Protocol-Version': '2.0.0',
+            Authorization: `Bearer ${connectionToken} `,
+          },
+          body: {
+            registerUploadRequest: {
+              recipes: [`urn:li:digitalmediaRecipe:feedshare-${postInfo.postType}`],
+              owner: `urn:li:person:${connectionID}`,
+              serviceRelationships: [
+                {
+                  relationshipType: 'OWNER',
+                  identifier: 'urn:li:userGeneratedContent',
+                },
+              ],
+            },
+          },
+          json: true,
+        };
+        const registerUploadResponse = await requestPromise(registerMediaRequest);
+        const response = LinkedInMapper.lnMediaRegisterResponseMapper(registerUploadResponse);
+
+        const uploadMediaRequest = {
+          method: 'PUT',
+          uri: response.uploadUrl,
+          headers: {
+            'X-Restli-Protocol-Version': '2.0.0',
+            ...registerUploadResponse['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['headers'],
+          },
+          body: createReadStream(join(process.cwd(), 'upload', media)),
+        };
+
+        await requestPromise(uploadMediaRequest);
+        delete response.uploadUrl;
+        parallelRequests.push(response);
+      }
+
+      return parallelRequests;
+    } catch (error) {
+      LoggerUtil.logError(error);
+      throw new InternalServerErrorException(error);
+    }
+  }
+
+  static async postProfileVideo(postInfo: PostDTO, connectionID: string, connectionToken: string): Promise<I_LN_SUCCESS_RESPONSE> {
+    const media = await this.registerVideoMedia(postInfo, connectionID, connectionToken);
 
     const lnPostRequest = {
       method: 'POST',
