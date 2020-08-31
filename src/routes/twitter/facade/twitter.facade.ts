@@ -22,6 +22,9 @@ export class TwitterFacade {
           const profileInfo = JSON.parse(resp.response);
           profileInfo.oauth_token = connectionToken.toString();
           profileInfo.connectionNetwork = E_CONNECTION_TYPE.TWITTER;
+
+          console.warn(profileInfo);
+          
           return profileInfo;
         }),
         map(response => TwitterMapper.twtProfileResponseMapper(response)),

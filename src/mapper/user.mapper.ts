@@ -12,11 +12,7 @@ export class UserMapper {
       "updatedAt": $.updatedAt,
       "userSuspended": $.userSuspended,
       "fullName": $.fullName,
-      "email": $.email,
-      "attribution": $.attribution,
-      "businessType": $.businessType,
-      "companyName": $.companyName,
-      "companySize": $.companySize
+      "email": $.email
     }
     `;
     const omittedUserInfo = SanitizerUtil.sanitizedResponse(userInfo);

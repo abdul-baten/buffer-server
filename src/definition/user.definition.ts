@@ -1,47 +1,8 @@
-import { E_ATTRIBUTION, E_BUSINESS_TYPE, E_COMPANY_SIZE, E_SUBSCRIPTION_PLAN } from '@enums';
+import { E_SUBSCRIPTION_PLAN } from '@enums';
 import { REG_EX_PATTERNS } from '@utils';
 import { SchemaDefinition } from 'mongoose';
 
 export const UserDefinition: SchemaDefinition = {
-  attribution: {
-    enum: [
-      E_ATTRIBUTION.ACQUIANTANCE,
-      E_ATTRIBUTION.ADVERTISEMENT,
-      E_ATTRIBUTION.BLOG,
-      E_ATTRIBUTION.OTHER,
-      E_ATTRIBUTION.SEARCH,
-      E_ATTRIBUTION.SOCIAL_MEDIA,
-    ],
-    trim: true,
-    type: String,
-  },
-  businessType: {
-    enum: [
-      E_BUSINESS_TYPE.AGENCY,
-      E_BUSINESS_TYPE.B2B,
-      E_BUSINESS_TYPE.ONLINE_STORE,
-      E_BUSINESS_TYPE.PERSONAL,
-      E_BUSINESS_TYPE.PHYSICAL_STORE,
-      E_BUSINESS_TYPE.PUBLISHER,
-      E_BUSINESS_TYPE.SAAS,
-    ],
-    trim: true,
-    type: String,
-  },
-  companyName: {
-    trim: true,
-    type: String,
-  },
-  companySize: {
-    enum: [
-      E_COMPANY_SIZE.FIFTY_ONE_TO_FIVE_HUNDRED,
-      E_COMPANY_SIZE.FIVE_TO_FIFTY,
-      E_COMPANY_SIZE.LESS_THAN_FIVE,
-      E_COMPANY_SIZE.MORE_THAN_FIVE_HUNDRED,
-    ],
-    trim: true,
-    type: String,
-  },
   createdAt: {
     type: Date,
     default: Date.now(),

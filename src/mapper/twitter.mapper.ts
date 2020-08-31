@@ -6,7 +6,7 @@ export class TwitterMapper {
     const response = `{
         "connectionCategory": $.connectionNetwork,
         "connectionID": $.id,
-        "connectionName": $.screen_name,
+        "connectionName": $.name,
         "connectionNetwork": $.connectionNetwork,
         "connectionPicture": $.profile_image_url_https,
         "connectionToken": $.oauth_token

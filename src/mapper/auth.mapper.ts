@@ -17,26 +17,10 @@ export class AuthMapper {
       "updatedAt": $.updatedAt,
       "userSuspended": $.userSuspended,
       "fullName": $.fullName,
-      "email": $.email,
-      "attribution": $.attribution,
-      "businessType": $.businessType,
-      "companyName": $.companyName,
-      "companySize": $.companySize
+      "email": $.email
     }
     `;
     const omittedUserInfo = SanitizerUtil.sanitizedResponse(userInfo);
     return jsonTransformer(userMap).evaluate(omittedUserInfo);
-  }
-
-  static memberResponse(memberInfo: Partial<I_USER>): Partial<I_USER> {
-    const response = `{
-            "attribution": $.attribution,
-           "businessType": $.businessType,
-           "companyName": $.companyName,
-           "companySize": $.companySize,
-           "plan": $.plan
-         }`;
-
-    return jsonTransformer(response).evaluate(memberInfo);
   }
 }
