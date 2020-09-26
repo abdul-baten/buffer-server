@@ -36,7 +36,7 @@ export const ConnectionDefinition: SchemaDefinition = {
   },
   connectionPicture: {
     type: String,
-    required: [true, 'Connection Picture is required!'],
+    required: [false, 'Connection Picture is required!'],
   },
   connectionToken: {
     type: String,

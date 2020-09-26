@@ -1,9 +1,7 @@
 import { catchError, map, switchMap } from 'rxjs/operators';
-import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
-import { forkJoin, from, Observable, of } from 'rxjs';
-import { I_FB_AUTH_ERROR, I_FB_STATUS_SUCCESS } from '@interfaces';
-import { InternalServerErrorException } from '@nestjs/common';
-import { LoggerUtil } from '@utils';
+import { ErrorHelper } from './error.helper';
+import { forkJoin, from, of } from 'rxjs';
+import { I_FB_STATUS_SUCCESS } from '@interfaces';
 import { PostDTO } from '@dtos';
 import { promisifyAll } from 'bluebird';
 import requestPromise = require('request-promise');
@@ -21,7 +19,7 @@ export class FacebookHelper {
     return from(Graph.postAsync(`${connectionID}/feed`, params))
       .pipe(
         map((response: I_FB_STATUS_SUCCESS) => response),
-        catchError(error => FacebookHelper.catchFBError(error)),
+        catchError(error => ErrorHelper.catchFBError(error)),
       )
       .toPromise();
   }
@@ -45,7 +43,7 @@ export class FacebookHelper {
 
       return parallelRequests;
     } catch (error) {
-      return FacebookHelper.catchFBError(JSON.parse(error.error).error).toPromise();
+      return ErrorHelper.catchFBError(JSON.parse(error.error).error).toPromise();
     }
   }
 
@@ -68,7 +66,7 @@ export class FacebookHelper {
         switchMap((postParams: Record<string, string>) => {
           return from(Graph.postAsync(`${connectionID}/feed`, postParams));
         }),
-        catchError(error => FacebookHelper.catchFBError(error)),
+        catchError(error => ErrorHelper.catchFBError(error)),
       )
       .toPromise() as unknown) as I_FB_STATUS_SUCCESS;
   }
@@ -88,45 +86,9 @@ export class FacebookHelper {
       .pipe(
         map((response: any) => response),
         catchError(error => {
-          return FacebookHelper.catchFBError(JSON.parse(error.error).error);
+          return ErrorHelper.catchFBError(JSON.parse(error.error).error);
         }),
       )
       .toPromise();
-  }
-
-  static catchFBError(error: I_FB_AUTH_ERROR): Observable<any> {
-    LoggerUtil.logError(JSON.stringify(error));
-
-    switch (error.code) {
-      case 100:
-        throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR),
-          E_ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR,
-        );
-
-      case 191:
-        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR), E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR);
-
-      case 197:
-        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_EMPTY_POST_ERROR), E_ERROR_MESSAGE.FB_EMPTY_POST_ERROR);
-
-      case 324:
-        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_MEDIA_TOO_LARGE), E_ERROR_MESSAGE.FB_MEDIA_TOO_LARGE);
-
-      case 368:
-        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_TOO_MANY_REQUESTS), E_ERROR_MESSAGE.FB_TOO_MANY_REQUESTS);
-
-      case 390:
-        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_MEDIA_MISSING), E_ERROR_MESSAGE.FB_MEDIA_MISSING);
-
-      case 506:
-        throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_DUPLICATE_MESSAGE_ERROR),
-          E_ERROR_MESSAGE.FB_DUPLICATE_MESSAGE_ERROR,
-        );
-
-      default:
-        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_OAUTH_ERROR), E_ERROR_MESSAGE.FB_OAUTH_ERROR);
-    }
   }
 }

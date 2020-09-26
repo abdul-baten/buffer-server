@@ -1,10 +1,10 @@
 import { catchError, defaultIfEmpty, map, pluck, tap } from 'rxjs/operators';
 import { ConfigService } from '@nestjs/config';
 import { ConnectionMapper } from '@mappers';
-import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
+import { ErrorHelper } from '@helpers';
 import { from, Observable } from 'rxjs';
 import { I_CONNECTION, I_FB_AUTH_ERROR, I_FB_AUTH_RESPONSE, I_FB_GROUP, I_FB_PAGE } from '@interfaces';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { LoggerUtil } from '@utils';
 import { promisifyAll } from 'bluebird';
 
@@ -58,7 +58,7 @@ export class FacebookService {
       }),
     ).pipe(
       map((authResponse: I_FB_AUTH_RESPONSE) => authResponse),
-      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+      catchError((error: I_FB_AUTH_ERROR) => ErrorHelper.catchFBError(error)),
     );
   }
 
@@ -70,7 +70,7 @@ export class FacebookService {
 
     return from(Graph.getAsync('me/accounts', params)).pipe(
       map(response => response),
-      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+      catchError((error: I_FB_AUTH_ERROR) => ErrorHelper.catchFBError(error)),
     );
   }
 
@@ -83,7 +83,7 @@ export class FacebookService {
 
     return from(Graph.getAsync('me/groups', params)).pipe(
       map(response => response),
-      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+      catchError((error: I_FB_AUTH_ERROR) => ErrorHelper.catchFBError(error)),
     );
   }
 
@@ -102,7 +102,7 @@ export class FacebookService {
       pluck('data'),
       map((response: I_FB_PAGE[]) => this.mapFBPages(response)),
       defaultIfEmpty([]),
-      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+      catchError((error: I_FB_AUTH_ERROR) => ErrorHelper.catchFBError(error)),
     );
   }
 
@@ -123,24 +123,7 @@ export class FacebookService {
       tap(console.warn),
       map((response: I_FB_GROUP[]) => this.mapFBGroups(response, authResponse.access_token)),
       defaultIfEmpty([]),
-      catchError((error: I_FB_AUTH_ERROR) => this.catchFBError(error)),
+      catchError((error: I_FB_AUTH_ERROR) => ErrorHelper.catchFBError(error)),
     );
-  }
-
-  catchFBError(error: I_FB_AUTH_ERROR): Observable<any> {
-    LoggerUtil.logError(JSON.stringify(error));
-    switch (error.code) {
-      case 100:
-        throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR),
-          E_ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR,
-        );
-
-      case 191:
-        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR), E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR);
-
-      default:
-        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.FB_OAUTH_ERROR), E_ERROR_MESSAGE.FB_OAUTH_ERROR);
-    }
   }
 }

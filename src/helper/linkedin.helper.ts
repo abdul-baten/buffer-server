@@ -1,7 +1,8 @@
 import { configuration } from '@config';
 import { createReadStream } from 'fs';
+import { E_LIFE_CYCLE_STATE, E_MEMBER_NETWORK_VISIBILITY, E_SHARE_MEDIA_CATEGORY } from '@enums';
 import { format } from 'util';
-import { I_LN_ACCESS_TOKEN_RESPONSE, I_LN_SUCCESS_RESPONSE } from '@interfaces';
+import { I_CONNECTION, I_LN_ACCESS_TOKEN_RESPONSE, I_LN_SUCCESS_RESPONSE } from '@interfaces';
 import { InternalServerErrorException } from '@nestjs/common';
 import { join } from 'path';
 import { LinkedInMapper } from '@mappers';
@@ -72,6 +73,27 @@ export class LinkedInHelper {
     return response;
   }
 
+  static async getUserOrgs(accessToken: string): Promise<I_CONNECTION[]> {
+    const userInfoRequest = {
+      method: 'GET',
+      uri:
+        'https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&state=APPROVED&projection=(elements*(organization~(localizedName)))',
+      headers: {
+        Authorization: `Bearer ${accessToken} `,
+      },
+    };
+
+    const response = JSON.parse(await requestPromise(userInfoRequest));
+    const orgs: I_CONNECTION[] = response.elements.map((element: any) => {
+      return {
+        connectionName: element['organization~']['localizedName'],
+        connectionID: element.organization,
+      };
+    });
+
+    return orgs;
+  }
+
   static async postProfileStatus(connectionID: string, connectionToken: string, postCaption: string): Promise<I_LN_SUCCESS_RESPONSE> {
     const lnPostRequest = {
       method: 'POST',
@@ -81,18 +103,18 @@ export class LinkedInHelper {
         Authorization: `Bearer ${connectionToken} `,
       },
       body: {
-        author: `urn:li:person:${connectionID}`,
-        lifecycleState: 'PUBLISHED',
+        author: connectionID,
+        lifecycleState: E_LIFE_CYCLE_STATE.PUBLISHED,
         specificContent: {
           'com.linkedin.ugc.ShareContent': {
             shareCommentary: {
               text: postCaption,
             },
-            shareMediaCategory: 'NONE',
+            shareMediaCategory: E_SHARE_MEDIA_CATEGORY.NONE,
           },
         },
         visibility: {
-          'com.linkedin.ugc.MemberNetworkVisibility': 'CONNECTIONS',
+          'com.linkedin.ugc.MemberNetworkVisibility': E_MEMBER_NETWORK_VISIBILITY.PUBLIC,
         },
       },
       json: true,
@@ -117,7 +139,7 @@ export class LinkedInHelper {
           body: {
             registerUploadRequest: {
               recipes: [`urn:li:digitalmediaRecipe:feedshare-${postInfo.postType}`],
-              owner: `urn:li:person:${connectionID}`,
+              owner: connectionID,
               serviceRelationships: [
                 {
                   relationshipType: 'OWNER',
@@ -129,7 +151,7 @@ export class LinkedInHelper {
           json: true,
         };
 
-        const response = LinkedInMapper.lnMediaRegisterResponseMapper(await requestPromise(registerMediaRequest));
+        const response = LinkedInMapper.mediaRegisterResponseMapper(await requestPromise(registerMediaRequest));
 
         const uploadMediaRequest = {
           method: 'POST',
@@ -164,8 +186,8 @@ export class LinkedInHelper {
         Authorization: `Bearer ${connectionToken}`,
       },
       body: {
-        author: `urn:li:person:${connectionID}`,
-        lifecycleState: 'PUBLISHED',
+        author: connectionID,
+        lifecycleState: E_LIFE_CYCLE_STATE.PUBLISHED,
         specificContent: {
           'com.linkedin.ugc.ShareContent': {
             shareCommentary: {
@@ -176,7 +198,7 @@ export class LinkedInHelper {
           },
         },
         visibility: {
-          'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+          'com.linkedin.ugc.MemberNetworkVisibility': E_MEMBER_NETWORK_VISIBILITY.PUBLIC,
         },
       },
       json: true,
@@ -202,7 +224,7 @@ export class LinkedInHelper {
           body: {
             registerUploadRequest: {
               recipes: [`urn:li:digitalmediaRecipe:feedshare-${postInfo.postType}`],
-              owner: `urn:li:person:${connectionID}`,
+              owner: connectionID,
               serviceRelationships: [
                 {
                   relationshipType: 'OWNER',
@@ -214,7 +236,7 @@ export class LinkedInHelper {
           json: true,
         };
         const registerUploadResponse = await requestPromise(registerMediaRequest);
-        const response = LinkedInMapper.lnMediaRegisterResponseMapper(registerUploadResponse);
+        const response = LinkedInMapper.mediaRegisterResponseMapper(registerUploadResponse);
 
         const uploadMediaRequest = {
           method: 'PUT',
@@ -249,8 +271,8 @@ export class LinkedInHelper {
         Authorization: `Bearer ${connectionToken}`,
       },
       body: {
-        author: `urn:li:person:${connectionID}`,
-        lifecycleState: 'PUBLISHED',
+        author: connectionID,
+        lifecycleState: E_LIFE_CYCLE_STATE.PUBLISHED,
         specificContent: {
           'com.linkedin.ugc.ShareContent': {
             shareCommentary: {
@@ -261,7 +283,7 @@ export class LinkedInHelper {
           },
         },
         visibility: {
-          'com.linkedin.ugc.MemberNetworkVisibility': 'PUBLIC',
+          'com.linkedin.ugc.MemberNetworkVisibility': E_MEMBER_NETWORK_VISIBILITY.PUBLIC,
         },
       },
       json: true,

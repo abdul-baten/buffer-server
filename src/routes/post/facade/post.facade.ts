@@ -23,7 +23,7 @@ export class PostFacade {
       ),
       { postConnection, postType, postStatus } = postInfo;
 
-    const { connectionID, connectionToken, connectionType } = postConnection;
+    const { connectionID, connectionType, connectionToken } = await this.postService.getConnection(postConnection.id as string);
 
     const connectionRequest$ = await this.postToConnections(
       connectionID as string,
@@ -71,6 +71,7 @@ export class PostFacade {
             connectionRequest$ = from(FacebookHelper.postImages(connectionID, connectionToken, postInfo)).pipe(map((response: any) => response));
             break;
 
+          case E_CONNECTION_TYPE.LINKEDIN_PAGE:
           case E_CONNECTION_TYPE.LINKEDIN_PROFILE:
             connectionRequest$ = from(LinkedInHelper.postProfileMedia(postInfo, connectionID, connectionToken)).pipe(
               map((response: any) => response),
@@ -94,6 +95,7 @@ export class PostFacade {
             connectionRequest$ = from(FacebookHelper.postVideo(connectionID, connectionToken, postInfo)).pipe(map((response: any) => response));
             break;
 
+          case E_CONNECTION_TYPE.LINKEDIN_PAGE:
           case E_CONNECTION_TYPE.LINKEDIN_PROFILE:
             connectionRequest$ = from(LinkedInHelper.postProfileVideo(postInfo, connectionID, connectionToken)).pipe(
               map((response: any) => response),
@@ -119,6 +121,7 @@ export class PostFacade {
             );
             break;
 
+          case E_CONNECTION_TYPE.LINKEDIN_PAGE:
           case E_CONNECTION_TYPE.LINKEDIN_PROFILE:
             connectionRequest$ = from(LinkedInHelper.postProfileStatus(connectionID, connectionToken, postInfo.postCaption)).pipe(
               map((response: any) => response),

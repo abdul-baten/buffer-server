@@ -20,7 +20,7 @@ export class LinkedInController {
   @Get('access-token')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  getAccessToken(@Query('connectionType') connectionType: string, @Query('code') code: string): Observable<I_LN_ACCESS_TOKEN_RESPONSE> {
+  accessToken(@Query('connectionType') connectionType: string, @Query('code') code: string): Observable<I_LN_ACCESS_TOKEN_RESPONSE> {
     const accessTokenResponse$ = this.linkedInFacade.getAccessToken(connectionType, code);
     return accessTokenResponse$;
   }
@@ -28,8 +28,16 @@ export class LinkedInController {
   @Get('me')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)
-  getUserInfo(@Query('accessToken') accessToken: string): Observable<I_CONNECTION> {
+  userInfo(@Query('accessToken') accessToken: string): Observable<I_CONNECTION> {
     const userInfoResponse$ = this.linkedInFacade.getUserInfo(accessToken);
+    return userInfoResponse$;
+  }
+
+  @Get('organisation')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.OK)
+  userOrgs(@Query('accessToken') accessToken: string): Observable<I_CONNECTION[]> {
+    const userInfoResponse$ = this.linkedInFacade.getUserOrgs(accessToken);
     return userInfoResponse$;
   }
 }

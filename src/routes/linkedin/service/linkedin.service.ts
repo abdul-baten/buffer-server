@@ -21,4 +21,9 @@ export class LinkedInService {
     const userInfoResponse$ = LinkedInHelper.getUserInfo(accessToken);
     return from(userInfoResponse$);
   }
+
+  getUserOrgs(accessToken: string): Observable<I_CONNECTION[]> {
+    const userInfoResponse$ = LinkedInHelper.getUserOrgs(accessToken);
+    return from(userInfoResponse$);
+  }
 }

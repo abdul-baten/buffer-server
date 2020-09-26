@@ -36,9 +36,10 @@ const config = {
       CLIENT_ID: '466314977585281',
       CLIENT_SECRET: '8628ebbe08dab12d34b5860df4336037',
       SCOPE:
-        'read_insights, publish_video, pages_show_list, ads_read, business_management, publish_to_groups, groups_access_member_info, pages_read_engagement, pages_manage_metadata, pages_read_user_content, pages_manage_ads, pages_manage_posts, pages_manage_engagement, public_profile',
+        'read_insights, publish_video, pages_show_list, ads_read, business_management, publish_to_groups, groups_access_member_info, pages_read_engagement, pages_manage_metadata, pages_read_user_content, pages_manage_ads, pages_manage_posts, pages_manage_engagement, public_profile, instagram_basic, instagram_manage_comments, instagram_manage_insights',
       PAGE_PARAMS: 'picture{url},name,category,id,access_token',
       GROUP_PARAMS: 'picture{url},name,id,privacy',
+      IG_PARAMS: 'accounts{instagram_business_account{id,username,profile_picture_url}}',
       GRAPH_API: 'https://graph.facebook.com',
       VIDEO_GRAPH_API: 'https://graph-video.facebook.com',
     },
@@ -59,6 +60,7 @@ const config = {
         'r_1st_connections_size',
       ],
       UGC_API: 'https://api.linkedin.com/v2/ugcPosts',
+      ORG_API: 'https://api.linkedin.com/v2/organizationAcls?q=roleAssignee',
     },
     TWITTER: {
       API_KEY: '3VeiDudVrGPgCEeoGoslExGyC',
@@ -66,6 +68,10 @@ const config = {
       ACCESS_TOKEN: '1745715421-zzjN6aAFrKoTtcXucnN2MFAjj4Vz0e0eKERA8jz',
       ACCESS_TOKEN_SECRET: 'ABJq5z8xuxgM2UkT78h7TfOdEIoJ5wTFOjEGQu0EoaVmI',
       GRAPH_API: 'https://api.twitter.com/1.1/statuses/update.json',
+    },
+    IG: {
+      API_ID: '616272269252720',
+      API_SECRET: '563bc6154eb240e3851692b55bcf132a',
     },
     REDIRECT_URL: 'https://localhost:5000/connection',
   },

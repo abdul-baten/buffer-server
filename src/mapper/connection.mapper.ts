@@ -5,12 +5,12 @@ import { I_CONNECTION, I_FB_GROUP, I_FB_PAGE } from '@interfaces';
 export class ConnectionMapper {
   static fbPageResponseMapper(pageInfo: Partial<I_FB_PAGE>): I_CONNECTION {
     const response = `{
-        "connectionToken": $.access_token,
         "connectionCategory": $.category,
         "connectionID": $.id,
         "connectionName": $.name,
+        "connectionNetwork": ${E_CONNECTION_TYPE.FACEBOOK_PAGE},
         "connectionPicture": $.picture.data.url,
-        "connectionNetwork": ${E_CONNECTION_TYPE.FACEBOOK_PAGE}
+        "connectionToken": $.access_token
     }`;
 
     return jsonTransformer(response).evaluate(pageInfo);
@@ -18,12 +18,12 @@ export class ConnectionMapper {
 
   static fbGroupResponseMapper(pageInfo: I_FB_GROUP): I_CONNECTION {
     const response = `{
-        "connectionToken": $.access_token,
         "connectionCategory": $.privacy,
         "connectionID": $.id,
         "connectionName": $.name,
+        "connectionNetwork": ${E_CONNECTION_TYPE.FACEBOOK_GROUP},
         "connectionPicture": $.picture.data.url,
-        "connectionNetwork": ${E_CONNECTION_TYPE.FACEBOOK_GROUP}
+        "connectionToken": $.access_token
     }`;
 
     return jsonTransformer(response).evaluate(pageInfo);
@@ -31,19 +31,32 @@ export class ConnectionMapper {
 
   static connectionsResponseMapper(connectionInfo: I_CONNECTION): I_CONNECTION {
     const response = `{
-      "id": $._id,
       "connectionAdded": $.connectionAdded,
-      "connectionUpdated": $.connectionUpdated,
-      "connectionToken": $.connectionToken,
       "connectionCategory": $.connectionCategory,
       "connectionID": $.connectionID,
       "connectionName": $.connectionName,
       "connectionPicture": $.connectionPicture,
-      "connectionUserID": $.connectionUserID,
       "connectionStatus": $.connectionStatus,
-      "connectionType": $.connectionType
+      "connectionToken": $.connectionToken,
+      "connectionType": $.connectionType,
+      "connectionUpdated": $.connectionUpdated,
+      "connectionUserID": $.connectionUserID,
+      "id": $._id
     }`;
 
     return jsonTransformer(response).evaluate(connectionInfo);
+  }
+
+  static instagramAccountsResponseMapper(pageInfo: Partial<I_FB_PAGE>): I_CONNECTION {
+    const response = `{
+        "connectionCategory": $.category,
+        "connectionID": $.id,
+        "connectionName": $.username,
+        "connectionNetwork": $.connectionNetwork,
+        "connectionPicture": $.profile_picture_url,
+        "connectionToken": $.accessToken
+    }`;
+
+    return jsonTransformer(response).evaluate(pageInfo);
   }
 }

@@ -24,7 +24,26 @@ export class LinkedInFacade {
       map((userResponse: any) => {
         userResponse.accessToken = accessToken;
         userResponse.connectionNetwork = E_CONNECTION_TYPE.LINKEDIN_PROFILE;
-        return LinkedInMapper.lnProfileResponseMapper(userResponse);
+        return LinkedInMapper.profileResponseMapper(userResponse);
+      }),
+    );
+  }
+
+  getUserOrgs(accessToken: string): Observable<I_CONNECTION[]> {
+    const userInfoResponse$ = this.linkedInService.getUserOrgs(accessToken);
+    return userInfoResponse$.pipe(
+      map((connections: I_CONNECTION[]) => {
+        return connections.map((entry: I_CONNECTION) => {
+          const { connectionID, connectionName } = entry;
+          const connection = {
+            connectionCategory: 'Organization Page',
+            connectionID,
+            connectionName,
+            connectionNetwork: E_CONNECTION_TYPE.LINKEDIN_PROFILE,
+            connectionToken: accessToken,
+          };
+          return LinkedInMapper.orgsResponseMapper(connection);
+        });
       }),
     );
   }

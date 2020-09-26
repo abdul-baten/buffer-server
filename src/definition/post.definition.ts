@@ -8,8 +8,8 @@ export const PostDefinition: SchemaDefinition = {
     type: String,
   },
   postConnection: {
-    connectionID: {
-      type: String,
+    id: {
+      type: Types.ObjectId,
       required: [true, 'Post Connection ID is required!'],
     },
     connectionType: {
@@ -26,10 +26,6 @@ export const PostDefinition: SchemaDefinition = {
       trim: true,
       type: String,
       required: [true, 'Post Connection Type is required!'],
-    },
-    connectionToken: {
-      type: String,
-      required: [true, 'Post Connection Token is required!'],
     },
   },
   postScheduleDateTime: {
