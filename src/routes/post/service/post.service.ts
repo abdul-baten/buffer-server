@@ -1,10 +1,11 @@
+import { ConnectionHelper, FacebookHelper, PostHelper } from '@helpers';
 import { from, Observable } from 'rxjs';
-import { I_CONNECTION, I_POST } from '@interfaces';
+import { I_CONNECTION, I_FB_STATUS_SUCCESS, I_POST } from '@interfaces';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { PostDTO } from '@dtos';
-import { PostHelper, ConnectionHelper } from '@helpers';
+import { E_POST_STATUS } from '@enums';
 
 @Injectable()
 export class PostService {
@@ -20,7 +21,11 @@ export class PostService {
   }
 
   async getConnection(connectionID: string): Promise<I_CONNECTION> {
-    return ConnectionHelper.getConnectionByID(this.connectionModel, connectionID).toPromise();
+    return ConnectionHelper.getConnectionsByID(this.connectionModel, connectionID);
+  }
+
+  postFacebookStatus(connectionID: string, connectionToken: string, postCaption: string, postStatus: E_POST_STATUS, postScheduleDateTime: string): Observable<I_FB_STATUS_SUCCESS> {
+    return from(FacebookHelper.postStatus(connectionID, connectionToken, postCaption, postStatus, postScheduleDateTime));
   }
 
   getPosts(userID: string): Observable<I_POST[]> {

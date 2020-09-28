@@ -1,5 +1,5 @@
 import { I_CONNECTION } from './connection.interface';
-import { I_ERROR } from './error.interface';
+import { I_ERR, I_ERROR } from './error.interface';
 import { I_FB_AUTH_ERROR, I_FB_AUTH_RESPONSE, I_FB_STATUS_SUCCESS } from './facebook.interface';
 import { I_FB_GROUP, I_FB_PAGE } from './facebook-post.model';
 import { I_FB_INS_PAYLOAD, I_INS_FB, I_INS_FB_POST_ITEM, I_INS_PAGE, I_INS_POST, I_INS_POSTS } from './facebook-insight.interface';
@@ -14,6 +14,7 @@ import { I_TW_ACCESS_TOKEN_RESPONSE, I_TW_ERROR_RESPONSE, I_TW_MEDIA_UPLOAD_RESP
 
 export {
   I_CONNECTION,
+  I_ERR,
   I_ERROR,
   I_FB_AUTH_ERROR,
   I_FB_AUTH_RESPONSE,

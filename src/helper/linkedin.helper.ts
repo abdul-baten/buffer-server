@@ -1,9 +1,11 @@
+import Axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
+import to from 'await-to-js';
 import { configuration } from '@config';
-import { createReadStream } from 'fs';
+import { createReadStream, readFileSync } from 'fs';
 import { E_LIFE_CYCLE_STATE, E_MEMBER_NETWORK_VISIBILITY, E_SHARE_MEDIA_CATEGORY } from '@enums';
 import { format } from 'util';
 import { I_CONNECTION, I_LN_ACCESS_TOKEN_RESPONSE, I_LN_SUCCESS_RESPONSE } from '@interfaces';
-import { InternalServerErrorException } from '@nestjs/common';
+import { InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
 import { join } from 'path';
 import { LinkedInMapper } from '@mappers';
 import { LoggerUtil } from '@utils';
@@ -94,34 +96,38 @@ export class LinkedInHelper {
     return orgs;
   }
 
-  static async postProfileStatus(connectionID: string, connectionToken: string, postCaption: string): Promise<I_LN_SUCCESS_RESPONSE> {
-    const lnPostRequest = {
-      method: 'POST',
-      uri: 'https://api.linkedin.com/v2/ugcPosts',
+  static async postProfileStatus(connectionID: string, connectionToken: string, postCaption: string): Promise<any> {
+    const url = 'https://api.linkedin.com/v2/ugcPosts';
+    const data = {
+      author: connectionID,
+      lifecycleState: E_LIFE_CYCLE_STATE.PUBLISHED,
+      specificContent: {
+        'com.linkedin.ugc.ShareContent': {
+          shareCommentary: {
+            text: postCaption,
+          },
+          shareMediaCategory: E_SHARE_MEDIA_CATEGORY.NONE,
+        },
+      },
+      visibility: {
+        'com.linkedin.ugc.MemberNetworkVisibility': E_MEMBER_NETWORK_VISIBILITY.PUBLIC,
+      },
+    };
+    const options: AxiosRequestConfig = {
+      responseType: 'json',
       headers: {
         'X-Restli-Protocol-Version': '2.0.0',
         Authorization: `Bearer ${connectionToken} `,
       },
-      body: {
-        author: connectionID,
-        lifecycleState: E_LIFE_CYCLE_STATE.PUBLISHED,
-        specificContent: {
-          'com.linkedin.ugc.ShareContent': {
-            shareCommentary: {
-              text: postCaption,
-            },
-            shareMediaCategory: E_SHARE_MEDIA_CATEGORY.NONE,
-          },
-        },
-        visibility: {
-          'com.linkedin.ugc.MemberNetworkVisibility': E_MEMBER_NETWORK_VISIBILITY.PUBLIC,
-        },
-      },
-      json: true,
     };
+    const [error, response]: [unknown | AxiosError, AxiosResponse<any> | undefined] = await to<AxiosResponse<any>>(Axios.post(url, data, options));
 
-    const response = await requestPromise(lnPostRequest);
-    return response;
+    if (error) {
+      const { response: errorResponse } = error as AxiosError;
+      throw new UnprocessableEntityException(errorResponse);
+    }
+
+    return { response };
   }
 
   static async registerMedia(postInfo: PostDTO, connectionID: string, connectionToken: string) {
@@ -242,12 +248,10 @@ export class LinkedInHelper {
           method: 'PUT',
           uri: response.uploadUrl,
           headers: {
-            'X-Restli-Protocol-Version': '2.0.0',
-            ...registerUploadResponse['value']['uploadMechanism']['com.linkedin.digitalmedia.uploading.MediaUploadHttpRequest']['headers'],
+            'Content-Type': 'application/octet-stream',
           },
-          body: createReadStream(join(process.cwd(), 'upload', media)),
+          body: readFileSync(join(process.cwd(), 'upload', media)),
         };
-
         await requestPromise(uploadMediaRequest);
         delete response.uploadUrl;
         parallelRequests.push(response);
@@ -255,7 +259,7 @@ export class LinkedInHelper {
 
       return parallelRequests;
     } catch (error) {
-      LoggerUtil.logError(error);
+      console.error(error);
       throw new InternalServerErrorException(error);
     }
   }
@@ -268,6 +272,7 @@ export class LinkedInHelper {
       uri: 'https://api.linkedin.com/v2/ugcPosts',
       headers: {
         'X-Restli-Protocol-Version': '2.0.0',
+        'Content-Type': 'application/json',
         Authorization: `Bearer ${connectionToken}`,
       },
       body: {
@@ -290,6 +295,7 @@ export class LinkedInHelper {
     };
 
     const response = await requestPromise(lnPostRequest);
+
     return response;
   }
 }

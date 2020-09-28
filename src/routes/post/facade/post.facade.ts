@@ -1,8 +1,9 @@
-import { catchError, map } from 'rxjs/operators';
+import { AxiosError } from 'axios';
+import { catchError, map, switchMap } from 'rxjs/operators';
 import { E_CONNECTION_TYPE, E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP, E_POST_STATUS, E_POST_TYPE } from '@enums';
 import { FacebookHelper, LinkedInHelper, TwitterHelper } from '@helpers';
 import { forkJoin, from, Observable, of } from 'rxjs';
-import { I_POST } from '@interfaces';
+import { I_CONNECTION, I_POST } from '@interfaces';
 import { Injectable, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
 import { PostDTO } from '@dtos';
 import { PostMapper } from '@mappers';
@@ -17,25 +18,26 @@ export class PostFacade {
     const postRequest$ = this.postService.addPost(postInfo).pipe(
         map((postInfo: I_POST) => SanitizerUtil.sanitizedResponse(postInfo)),
         map((post: I_POST) => PostMapper.postResponseMapper(post)),
-        catchError(() => {
-          throw new UnprocessableEntityException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.ADD_POST_ERROR), E_ERROR_MESSAGE.ADD_POST_ERROR);
-        }),
       ),
       { postConnection, postType, postStatus } = postInfo;
 
     const { connectionID, connectionType, connectionToken } = await this.postService.getConnection(postConnection.id as string);
 
-    const connectionRequest$ = await this.postToConnections(
-      connectionID as string,
-      connectionType as E_CONNECTION_TYPE,
-      connectionToken as string,
-      postType,
-      postStatus,
-      postInfo,
+    const connectionRequest$ = from(
+      this.postToConnections(connectionID as string, connectionType as E_CONNECTION_TYPE, connectionToken as string, postType, postStatus, postInfo),
     );
 
-    return forkJoin(postRequest$, connectionRequest$)
-      .pipe(map(([post]) => post))
+    return forkJoin([connectionRequest$, postRequest$])
+      .pipe(
+        map(([_res, post]) => {
+          return post;
+        }),
+        catchError(error => {
+          console.warn(error);
+
+          throw new UnprocessableEntityException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.ADD_POST_ERROR));
+        }),
+      )
       .toPromise();
   }
 
@@ -116,7 +118,7 @@ export class PostFacade {
         switch (connectionType) {
           case E_CONNECTION_TYPE.FACEBOOK_PAGE:
           case E_CONNECTION_TYPE.FACEBOOK_GROUP:
-            connectionRequest$ = from(FacebookHelper.postStatus(connectionID, connectionToken, postInfo.postCaption)).pipe(
+            connectionRequest$ = from(FacebookHelper.postStatus(connectionID, connectionToken, postInfo.postCaption, E_POST_STATUS.PUBLISHED, '')).pipe(
               map((response: any) => response),
             );
             break;
@@ -141,6 +143,54 @@ export class PostFacade {
       }
     }
 
-    return connectionRequest$;
+    return connectionRequest$.toPromise();
+  }
+
+  publishFacebookText(postInfo: PostDTO): Observable<I_POST> {
+    const {
+      postCaption,
+      postStatus,
+      postScheduleDateTime,
+      postConnection: { id },
+    } = postInfo;
+    const connection$ = from(this.postService.getConnection(id as string));
+    return connection$.pipe(
+      switchMap(({ connectionID = '', connectionToken = '' }: I_CONNECTION) => {
+        return this.postService.postFacebookStatus(connectionID as string, connectionToken as string, postCaption, postStatus, postScheduleDateTime);
+      }),
+      map(() => (postInfo as unknown) as I_POST),
+      catchError((error: AxiosError) => {
+        throw new UnprocessableEntityException({
+          errorCode: error.response?.status,
+          errorDetails: error.response?.data,
+          httpCode: E_ERROR_MESSAGE.ADD_POST_ERROR,
+          message: E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.ADD_POST_ERROR),
+        });
+      }),
+    );
+  }
+
+  scheduleFacebookText(postInfo: PostDTO): Observable<I_POST> {
+    const {
+      postCaption,
+      postStatus,
+      postScheduleDateTime,
+      postConnection: { id },
+    } = postInfo;
+    const connection$ = from(this.postService.getConnection(id as string));
+    return connection$.pipe(
+      switchMap(({ connectionID = '', connectionToken = '' }: I_CONNECTION) => {
+        return this.postService.postFacebookStatus(connectionID as string, connectionToken as string, postCaption, postStatus, postScheduleDateTime);
+      }),
+      map(() => (postInfo as unknown) as I_POST),
+      catchError((error: AxiosError) => {
+        throw new UnprocessableEntityException({
+          errorCode: error.response?.status,
+          errorDetails: error.response?.data,
+          httpCode: E_ERROR_MESSAGE.ADD_POST_ERROR,
+          message: E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.ADD_POST_ERROR),
+        });
+      }),
+    );
   }
 }

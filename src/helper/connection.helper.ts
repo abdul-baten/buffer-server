@@ -3,13 +3,26 @@ import { I_CONNECTION } from '@interfaces';
 import { Model } from 'mongoose';
 
 export class ConnectionHelper {
+  //todo: replace this method with getConnectionsByID
   static getConnectionByID(connectionModel: Model<I_CONNECTION>, _id: string): Observable<I_CONNECTION> {
     const connection = connectionModel
       .findOne({ _id })
       .lean(true)
       .exec();
 
-    return from(connection);
+    return from(connection || {});
+  }
+
+  static async getConnectionsByID(connectionModel: Model<I_CONNECTION>, _id: string): Promise<I_CONNECTION> {
+    try {
+      const connection = await connectionModel.findOne({ _id }).lean();
+      if (!connection) {
+        throw new Error('no document found');
+      }
+      return connection;
+    } catch (error) {
+      return error;
+    }
   }
 
   static getConnectionsByUserID(connectionModel: Model<I_CONNECTION>, connectionUserID: string): Observable<I_CONNECTION[]> {

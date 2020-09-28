@@ -4,13 +4,15 @@ export interface I_FB_AUTH_RESPONSE {
 }
 
 export interface I_FB_STATUS_SUCCESS {
-  id: string;
+  data: string | Record<string, any>;
 }
 
 export interface I_FB_AUTH_ERROR {
-  message: string;
-  type: string;
   code: number;
   error_subcode: number;
+  error_user_msg?: string;
+  error_user_title?: string;
   fbtrace_id: string;
+  message: string;
+  type: string;
 }

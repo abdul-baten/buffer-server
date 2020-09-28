@@ -16,6 +16,20 @@ export class PostController {
     return from(this.postFacade.addPost(addPostDTO));
   }
 
+  @Post('text-facebook-published')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  publishFacebookText(@Body() addPostDTO: PostDTO): Observable<I_POST> {
+    return from(this.postFacade.publishFacebookText(addPostDTO));
+  }
+
+  @Post('text-facebook-scheduled')
+  @UseGuards(AuthGuard)
+  @HttpCode(HttpStatus.CREATED)
+  scheduleFacebookText(@Body() addPostDTO: PostDTO): Observable<I_POST> {
+    return from(this.postFacade.scheduleFacebookText(addPostDTO));
+  }
+
   @Get('posts')
   @UseGuards(AuthGuard)
   @HttpCode(HttpStatus.OK)

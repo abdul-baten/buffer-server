@@ -15,8 +15,11 @@ export class AuthGuard implements CanActivate {
     private readonly configService: ConfigService,
   ) {}
   canActivate(context: ExecutionContext): Observable<boolean> {
-    const request = context.switchToHttp().getRequest(),
-      { authToken } = request.cookies;
+    const request = context.switchToHttp().getRequest();
+    
+    console.warn(request);
+    
+    const  { authToken } = request.cookies;
 
     if (!authToken) {
       return of(false);

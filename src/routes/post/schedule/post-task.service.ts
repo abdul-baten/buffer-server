@@ -14,7 +14,7 @@ import { queue } from 'async';
 export class PostTaskService {
   constructor(@InjectModel('Post') private readonly postModel: Model<I_POST>) {}
 
-  @Cron(CronExpression.EVERY_15_MINUTES)
+  @Cron(CronExpression.EVERY_30_MINUTES)
   async handlePostCron(): Promise<void> {
     const currentDateTime = formatISO(roundToNearestMinutes(new Date(), { nearestTo: 15 }));
 
@@ -89,7 +89,7 @@ export class PostTaskService {
         switch (connectionType) {
           case E_CONNECTION_TYPE.FACEBOOK_PAGE:
           case E_CONNECTION_TYPE.FACEBOOK_GROUP:
-            FacebookHelper.postStatus(connectionID, connectionToken, postInfo.postCaption)
+            FacebookHelper.postStatus(connectionID, connectionToken, postInfo.postCaption, E_POST_STATUS.PUBLISHED, '')
               .then(() => {
                 self.postModel.findByIdAndUpdate({ _id: postInfo._id }, { postStatus: E_POST_STATUS.PUBLISHED }).exec();
               })
