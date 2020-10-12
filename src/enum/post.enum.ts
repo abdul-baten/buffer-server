@@ -1,10 +1,10 @@
-export enum E_POST_TYPE {
+export enum EPostType {
   IMAGE = 'image',
   TEXT = 'text',
   VIDEO = 'video',
 }
 
-export enum E_POST_STATUS {
+export enum EPostStatus {
   DELETED = 'deleted',
   PUBLISHED = 'published',
   SAVED = 'saved',

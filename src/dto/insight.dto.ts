@@ -1,20 +1,19 @@
-import { IsDefined, IsString, IsEmpty } from 'class-validator';
+import { IsDefined, IsString } from 'class-validator';
 
-export class FBInsightDTO {
+export class FbInsightDto {
   @IsDefined()
   @IsString()
-  readonly id: string;
-
-  @IsDefined()
-  @IsString()
-  readonly since: string;
+  readonly id!: string;
 
   @IsDefined()
   @IsString()
-  @IsEmpty()
-  readonly until: string;
+  readonly user_id!: string;
 
   @IsDefined()
   @IsString()
-  readonly userID: string;
+  readonly since!: string;
+
+  @IsDefined()
+  @IsString()
+  readonly until!: string;
 }

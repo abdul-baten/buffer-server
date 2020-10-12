@@ -1,13 +1,16 @@
-export interface I_FB_AUTH_RESPONSE {
+import type { EPostStatus } from '@enums';
+import type { IPost } from './post.interface';
+
+export interface IFbAuthResponse {
   access_token: string;
   bearer: string;
 }
 
-export interface I_FB_STATUS_SUCCESS {
-  data: string | Record<string, any>;
+export interface IFbResponse {
+  data: string | Record<string, unknown>;
 }
 
-export interface I_FB_AUTH_ERROR {
+export interface IFbAuthError {
   code: number;
   error_subcode: number;
   error_user_msg?: string;
@@ -15,4 +18,13 @@ export interface I_FB_AUTH_ERROR {
   fbtrace_id: string;
   message: string;
   type: string;
+}
+
+export interface IFbPostPayload{
+  connection_id: string;
+  connection_token: string;
+  post_date_time?: string;
+  post_message?: string;
+  post_info?: IPost;
+  post_status?: EPostStatus;
 }

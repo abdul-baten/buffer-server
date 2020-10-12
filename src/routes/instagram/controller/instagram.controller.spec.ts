@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { InstagramController } from './instagram.controller';
+import { Test, TestingModule } from '@nestjs/testing';
 
-describe('InstagramController', () => {
+describe('Instagram Controller', () => {
   let controller: InstagramController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [InstagramController],
+      controllers: [InstagramController]
     }).compile();
 
     controller = module.get<InstagramController>(InstagramController);

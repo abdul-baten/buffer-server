@@ -1,300 +1,297 @@
-import Axios, { AxiosError, AxiosRequestConfig, AxiosResponse } from 'axios';
-import to from 'await-to-js';
-import { configuration } from '@config';
-import { createReadStream, readFileSync } from 'fs';
-import { E_LIFE_CYCLE_STATE, E_MEMBER_NETWORK_VISIBILITY, E_SHARE_MEDIA_CATEGORY } from '@enums';
+import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { CommonUtil } from '@utils';
+import { ConfigService } from '@nestjs/config';
+import { ELifeCycleState, ENetworkVisibility, EShareMediaCategory } from '@enums';
 import { format } from 'util';
-import { I_CONNECTION, I_LN_ACCESS_TOKEN_RESPONSE, I_LN_SUCCESS_RESPONSE } from '@interfaces';
-import { InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
+import { Injectable } from '@nestjs/common';
 import { join } from 'path';
 import { LinkedInMapper } from '@mappers';
-import { LoggerUtil } from '@utils';
-import { PostDTO } from '@dtos';
-import { randomBytes } from 'crypto';
+import { readFileSync } from 'fs';
+import { resolve } from 'bluebird';
 
-import requestPromise = require('request-promise');
-export class LinkedInHelper {
-  private static clientId = configuration.default.SOCIAL_PLATFORM.LINKEDIN.CLIENT_ID;
-  private static redirectURL = configuration.default.SOCIAL_PLATFORM.REDIRECT_URL;
-  private static scope = configuration.default.SOCIAL_PLATFORM.LINKEDIN.SCOPE;
-  private static clientSecret = configuration.default.SOCIAL_PLATFORM.LINKEDIN.CLIENT_SECRET;
+import type { IConnection, ILnSuccess, ILnMediaRegisterPayload, ILnHeaders } from '@interfaces';
+import type { PostDto } from '@dtos';
 
-  static authorize(connectionType: string): string {
-    const bytes = randomBytes(12);
-    const bytesString = bytes.toString('base64');
-    const sanitizedString = bytesString
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
+/* eslint-disable @typescript-eslint/naming-convention */
+@Injectable()
+export class LinkedInHelperService {
+  constructor (private readonly configService: ConfigService) {}
 
-    let url = format(
-      'https://www.linkedin.com/uas/oauth2/authorization?response_type=code' + '&client_id=%s' + '&state=%s' + '&redirect_uri=%s',
-      this.clientId,
-      sanitizedString,
-      encodeURIComponent(this.redirectURL + '/' + connectionType),
-    );
-
-    if (this.scope && this.scope.length > 0) {
-      url += '&scope=' + this.scope.join('%20');
-    }
-
-    return url;
+  private commonHeaders (connection_token: string): ILnHeaders {
+    return {
+      Authorization: `Bearer ${connection_token}`,
+      'X-Restli-Protocol-Version': '2.0.0'
+    };
   }
 
-  static async getAccessToken(connectionType: string, code: string): Promise<I_LN_ACCESS_TOKEN_RESPONSE> {
-    const accessTokenRequest = {
-      method: 'POST',
-      uri: 'https://www.linkedin.com/oauth/v2/accessToken',
+  public async authorize (connection_type: string): Promise<string> {
+    const sanitizedString = CommonUtil.base64String();
+    const redirect_uri = this.configService.get('APP.SOCIAL_PLATFORM.REDIRECT_URL') as string;
+    const scope = this.configService.get('APP.SOCIAL_PLATFORM.LINKEDIN.SCOPE');
+    const formatted_uri = await resolve(format(
+      'https://www.linkedin.com/uas/oauth2/authorization?response_type=code&client_id=%s&state=%s&redirect_uri=%s',
+      this.configService.get('APP.SOCIAL_PLATFORM.LINKEDIN.CLIENT_ID'),
+      sanitizedString,
+      encodeURIComponent(`${redirect_uri}/${connection_type}`)
+    ));
+    const uri = formatted_uri + scope && scope.length > 0 ? `&scope=${scope.join('%20')}` : '';
+
+    return uri;
+  }
+
+  public async getAccessToken (connection_type: string, code: string): Promise<string> {
+    const uri = 'https://www.linkedin.com/oauth/v2/accessToken';
+    const redirect_uri = this.configService.get('APP.SOCIAL_PLATFORM.REDIRECT_URL');
+    const client_secret = this.configService.get('APP.SOCIAL_PLATFORM.LINKEDIN.CLIENT_SECRET');
+    const client_id = this.configService.get('APP.SOCIAL_PLATFORM.LINKEDIN.CLIENT_ID');
+    const config: AxiosRequestConfig = {
       headers: {
-        'Content-Type': 'application/x-www-form-urlencoded',
+        'Content-Type': 'application/x-www-form-urlencoded'
       },
-      qs: {
-        client_id: this.clientId,
-        client_secret: this.clientSecret,
+      params: {
+        client_id,
+        client_secret,
         code,
         grant_type: 'authorization_code',
-        redirect_uri: this.redirectURL + '/' + connectionType,
-      },
+        redirect_uri: `${redirect_uri}/${connection_type}`
+      }
     };
+    const response = (await Axios.post(uri, null, config)).data;
 
-    const response = JSON.parse(await requestPromise(accessTokenRequest));
     return response;
   }
 
-  static async getUserInfo(accessToken: string): Promise<any> {
-    const userInfoRequest = {
-      method: 'GET',
-      uri:
-        'https://api.linkedin.com/v2/me?projection=(id,organizations,company,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))',
-      headers: {
-        Authorization: `Bearer ${accessToken} `,
-      },
+  async getUserInfo (accessToken: string): Promise<IConnection> {
+    const uri =
+    'https://api.linkedin.com/v2/me?projection=(id,organizations,company,localizedFirstName,localizedLastName,profilePicture(displayImage~:playableStreams))';
+    const config: AxiosRequestConfig = {
+      params: {
+        headers: {
+          Authorization: `Bearer ${accessToken}`
+        }
+      }
     };
+    const response = (await Axios.get(uri, config)).data;
 
-    const response = JSON.parse(await requestPromise(userInfoRequest));
     return response;
   }
 
-  static async getUserOrgs(accessToken: string): Promise<I_CONNECTION[]> {
-    const userInfoRequest = {
-      method: 'GET',
-      uri:
-        'https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&state=APPROVED&projection=(elements*(organization~(localizedName)))',
-      headers: {
-        Authorization: `Bearer ${accessToken} `,
-      },
+  async getUserOrgs (accessToken: string): Promise<IConnection[]> {
+    const uri =
+    'https://api.linkedin.com/v2/organizationAcls?q=roleAssignee&role=ADMINISTRATOR&state=APPROVED&projection=(elements*(organization~(localizedName)))';
+    const config: AxiosRequestConfig = {
+      params: {
+        headers: {
+          Authorization: `Bearer ${accessToken} `
+        }
+      }
     };
-
-    const response = JSON.parse(await requestPromise(userInfoRequest));
-    const orgs: I_CONNECTION[] = response.elements.map((element: any) => {
-      return {
-        connectionName: element['organization~']['localizedName'],
-        connectionID: element.organization,
-      };
-    });
+    const response = (await Axios.get(uri, config)).data;
+    const orgs: IConnection[] = response.elements.map((element: {
+      organization: never,
+      [x: string]: { localizedName: string; }
+    }) => ({
+      connection_id: element.organization,
+      connection_name: element['organization~'].localizedName
+    }));
 
     return orgs;
   }
 
-  static async postProfileStatus(connectionID: string, connectionToken: string, postCaption: string): Promise<any> {
-    const url = 'https://api.linkedin.com/v2/ugcPosts';
+  async postStatus (connection_id: string, post_message: string): Promise<ILnSuccess> {
+    const uri = 'https://api.linkedin.com/v2/ugcPosts';
     const data = {
-      author: connectionID,
-      lifecycleState: E_LIFE_CYCLE_STATE.PUBLISHED,
+      author: connection_id,
+      lifecycleState: ELifeCycleState.PUBLISHED,
       specificContent: {
         'com.linkedin.ugc.ShareContent': {
           shareCommentary: {
-            text: postCaption,
+            text: post_message
           },
-          shareMediaCategory: E_SHARE_MEDIA_CATEGORY.NONE,
-        },
+          shareMediaCategory: EShareMediaCategory.NONE
+        }
       },
       visibility: {
-        'com.linkedin.ugc.MemberNetworkVisibility': E_MEMBER_NETWORK_VISIBILITY.PUBLIC,
-      },
-    };
-    const options: AxiosRequestConfig = {
-      responseType: 'json',
-      headers: {
-        'X-Restli-Protocol-Version': '2.0.0',
-        Authorization: `Bearer ${connectionToken} `,
-      },
-    };
-    const [error, response]: [unknown | AxiosError, AxiosResponse<any> | undefined] = await to<AxiosResponse<any>>(Axios.post(url, data, options));
-
-    if (error) {
-      const { response: errorResponse } = error as AxiosError;
-      throw new UnprocessableEntityException(errorResponse);
-    }
-
-    return { response };
-  }
-
-  static async registerMedia(postInfo: PostDTO, connectionID: string, connectionToken: string) {
-    try {
-      const parallelRequests: any[] = [];
-
-      for (let media of postInfo.postMedia) {
-        const registerMediaRequest = {
-          method: 'POST',
-          uri: 'https://api.linkedin.com/v2/assets?action=registerUpload',
-          headers: {
-            'X-Restli-Protocol-Version': '2.0.0',
-            Authorization: `Bearer ${connectionToken} `,
-          },
-          body: {
-            registerUploadRequest: {
-              recipes: [`urn:li:digitalmediaRecipe:feedshare-${postInfo.postType}`],
-              owner: connectionID,
-              serviceRelationships: [
-                {
-                  relationshipType: 'OWNER',
-                  identifier: 'urn:li:userGeneratedContent',
-                },
-              ],
-            },
-          },
-          json: true,
-        };
-
-        const response = LinkedInMapper.mediaRegisterResponseMapper(await requestPromise(registerMediaRequest));
-
-        const uploadMediaRequest = {
-          method: 'POST',
-          uri: response.uploadUrl,
-          headers: {
-            'X-Restli-Protocol-Version': '2.0.0',
-            Authorization: `Bearer ${connectionToken}`,
-          },
-          body: createReadStream(join(process.cwd(), 'upload', media)),
-        };
-
-        await requestPromise(uploadMediaRequest);
-        delete response.uploadUrl;
-        parallelRequests.push(response);
+        'com.linkedin.ugc.MemberNetworkVisibility': ENetworkVisibility.PUBLIC
       }
-
-      return parallelRequests;
-    } catch (error) {
-      LoggerUtil.logError(error);
-      throw new InternalServerErrorException(error);
-    }
-  }
-
-  static async postProfileMedia(postInfo: PostDTO, connectionID: string, connectionToken: string): Promise<any> {
-    const media = await this.registerMedia(postInfo, connectionID, connectionToken);
-
-    const lnPostRequest = {
-      method: 'POST',
-      uri: 'https://api.linkedin.com/v2/ugcPosts',
-      headers: {
-        'X-Restli-Protocol-Version': '2.0.0',
-        Authorization: `Bearer ${connectionToken}`,
-      },
-      body: {
-        author: connectionID,
-        lifecycleState: E_LIFE_CYCLE_STATE.PUBLISHED,
-        specificContent: {
-          'com.linkedin.ugc.ShareContent': {
-            shareCommentary: {
-              text: postInfo.postCaption,
-            },
-            shareMediaCategory: postInfo.postType.toUpperCase(),
-            media,
-          },
-        },
-        visibility: {
-          'com.linkedin.ugc.MemberNetworkVisibility': E_MEMBER_NETWORK_VISIBILITY.PUBLIC,
-        },
-      },
-      json: true,
     };
+    const config: AxiosRequestConfig = {
 
-    const response = await requestPromise(lnPostRequest);
+    };
+    const response = (await Axios.post(uri, data, config)).data;
+
     return response;
   }
 
-  static async registerVideoMedia(postInfo: PostDTO, connectionID: string, connectionToken: string) {
-    try {
-      const parallelRequests: any[] = [];
-
-      for (let media of postInfo.postMedia) {
-        const registerMediaRequest = {
-          method: 'POST',
-          uri: 'https://api.linkedin.com/v2/assets?action=registerUpload',
-          headers: {
-            'Content-Type': 'application/json',
-            'X-Restli-Protocol-Version': '2.0.0',
-            Authorization: `Bearer ${connectionToken} `,
-          },
-          body: {
-            registerUploadRequest: {
-              recipes: [`urn:li:digitalmediaRecipe:feedshare-${postInfo.postType}`],
-              owner: connectionID,
-              serviceRelationships: [
-                {
-                  relationshipType: 'OWNER',
-                  identifier: 'urn:li:userGeneratedContent',
-                },
-              ],
-            },
-          },
-          json: true,
-        };
-        const registerUploadResponse = await requestPromise(registerMediaRequest);
-        const response = LinkedInMapper.mediaRegisterResponseMapper(registerUploadResponse);
-
-        const uploadMediaRequest = {
-          method: 'PUT',
-          uri: response.uploadUrl,
-          headers: {
-            'Content-Type': 'application/octet-stream',
-          },
-          body: readFileSync(join(process.cwd(), 'upload', media)),
-        };
-        await requestPromise(uploadMediaRequest);
-        delete response.uploadUrl;
-        parallelRequests.push(response);
+  async registerMedia (post_info: PostDto, connection_id: string, connection_token: string): Promise<unknown> {
+    const requests: Promise<AxiosResponse>[] = [];
+    const post_medias_length = post_info.post_media.length;
+    const uri = 'https://api.linkedin.com/v2/assets?action=registerUpload';
+    const data = {
+      registerUploadRequest: {
+        owner: connection_id,
+        recipes: [`urn:li:digitalmediaRecipe:feedshare-${post_info.post_type}`],
+        serviceRelationships: [
+          {
+            identifier: 'urn:li:userGeneratedContent',
+            relationshipType: 'OWNER'
+          }
+        ]
       }
-
-      return parallelRequests;
-    } catch (error) {
-      console.error(error);
-      throw new InternalServerErrorException(error);
-    }
-  }
-
-  static async postProfileVideo(postInfo: PostDTO, connectionID: string, connectionToken: string): Promise<I_LN_SUCCESS_RESPONSE> {
-    const media = await this.registerVideoMedia(postInfo, connectionID, connectionToken);
-
-    const lnPostRequest = {
-      method: 'POST',
-      uri: 'https://api.linkedin.com/v2/ugcPosts',
-      headers: {
-        'X-Restli-Protocol-Version': '2.0.0',
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${connectionToken}`,
-      },
-      body: {
-        author: connectionID,
-        lifecycleState: E_LIFE_CYCLE_STATE.PUBLISHED,
-        specificContent: {
-          'com.linkedin.ugc.ShareContent': {
-            shareCommentary: {
-              text: postInfo.postCaption,
-            },
-            shareMediaCategory: postInfo.postType.toUpperCase(),
-            media,
-          },
-        },
-        visibility: {
-          'com.linkedin.ugc.MemberNetworkVisibility': E_MEMBER_NETWORK_VISIBILITY.PUBLIC,
-        },
-      },
-      json: true,
+    };
+    const config: AxiosRequestConfig = {
+      headers: { ...this.commonHeaders(connection_token) }
     };
 
-    const response = await requestPromise(lnPostRequest);
+    for (let index = 0; index < post_medias_length; index += 1) {
+      requests.push(Axios.post(uri, data, config));
+    }
+
+    const req = await Promise.all(requests);
+
+    return req;
+  }
+
+  async postProfileMedia (post_info: PostDto, connection_id: string, connection_token: string): Promise<ILnSuccess> {
+    const media = await this.registerMedia(post_info, connection_id, connection_token);
+    const uri = 'https://api.linkedin.com/v2/ugcPosts';
+    const data = {
+      author: connection_id,
+      lifecycleState: ELifeCycleState.PUBLISHED,
+      specificContent: {
+        'com.linkedin.ugc.ShareContent': {
+          media,
+          shareCommentary: {
+            text: post_info.post_message
+          },
+          shareMediaCategory: post_info.post_type.toUpperCase()
+        }
+      },
+      visibility: {
+        'com.linkedin.ugc.MemberNetworkVisibility': ENetworkVisibility.PUBLIC
+      }
+    };
+    const config: AxiosRequestConfig = {
+      headers: { ...this.commonHeaders(connection_token) }
+
+    };
+    const response = (await Axios.post(uri, data, config)).data;
+
+    return response;
+  }
+
+  private async registerUpload (payload: ILnMediaRegisterPayload): Promise<Record<string, string>[]> {
+    const { post_type, post_media, connection_id, connection_token } = payload;
+    const register_upload_requests: Promise<AxiosResponse>[] = [];
+    const post_medias_length = post_media.length;
+    const register_upload_uri = 'https://api.linkedin.com/v2/assets?action=registerUpload';
+    const register_upload_config: AxiosRequestConfig = {
+      headers: {
+        ...this.commonHeaders(connection_token),
+        'Content-Type': 'application/json'
+      }
+    };
+    const register_upload_data = {
+      registerUploadRequest: {
+        owner: connection_id,
+        recipes: [`urn:li:digitalmediaRecipe:feedshare-${post_type}`],
+        serviceRelationships: [
+          {
+            identifier: 'urn:li:userGeneratedContent',
+            relationshipType: 'OWNER'
+          }
+        ]
+      }
+    };
+
+    for (let index = 0; index < post_medias_length; index += 1) {
+      const register_upload_request = Axios.post(register_upload_uri, register_upload_data, register_upload_config);
+
+      register_upload_requests.push(register_upload_request);
+    }
+
+    const register_upload_responses = await Promise.all(register_upload_requests);
+
+    return register_upload_responses.map((response: AxiosResponse) => LinkedInMapper.mediaRegisterResponseMapper(response.data));
+  }
+
+  private async registerVideoMedia (post_info: PostDto, connection_id: string, connection_token: string): Promise<string[]> {
+    const { post_type, post_media } = post_info;
+    const register_upload_responses = await this.registerUpload({
+      connection_id,
+      connection_token,
+      post_media,
+      post_type
+    });
+    const register_upload_responses_length = register_upload_responses.length;
+    const requests: Promise<AxiosResponse>[] = [];
+
+    for (let index = 0; index < register_upload_responses_length; index += 1) {
+      const data = readFileSync(join(process.cwd(), 'upload', post_media[index]));
+      const uri = register_upload_responses[index].uploadUrl;
+      const config: AxiosRequestConfig = {
+        headers: {
+          'Content-Type': 'application/octet-stream'
+        }
+      };
+      const request = Axios.put(uri, data, config);
+
+      requests.push(request);
+    }
+
+    const response = await Promise.all(requests);
+
+    return response.map((response: AxiosResponse) => response.data);
+  }
+
+  private commonData (configuration: {
+    connection_id: string,
+    connection_token: string,
+    media: string[],
+    post_info: PostDto,
+  }): { config: AxiosRequestConfig, data: Record<string, unknown> } {
+    const { post_info, media, connection_id, connection_token } = configuration;
+    const config: AxiosRequestConfig = {
+      headers: {
+        ...this.commonHeaders(connection_token),
+        'Content-Type': 'application/json'
+      },
+      params: {
+        visibility: {
+          'com.linkedin.ugc.MemberNetworkVisibility': ENetworkVisibility.PUBLIC
+        }
+      }
+    };
+    const data = {
+      author: connection_id,
+      lifecycleState: ELifeCycleState.PUBLISHED,
+      specificContent: {
+        'com.linkedin.ugc.ShareContent': {
+          media,
+          shareCommentary: {
+            text: post_info.post_message
+          },
+          shareMediaCategory: post_info.post_type.toUpperCase()
+        }
+      }
+    };
+
+    return {
+      config,
+      data };
+  }
+
+  public async postProfileVideo (post_info: PostDto, connection_id: string, connection_token: string): Promise<ILnSuccess> {
+    const media = await this.registerVideoMedia(post_info, connection_id, connection_token);
+    const uri = 'https://api.linkedin.com/v2/ugcPosts';
+    const { data, config } = this.commonData({
+      connection_id,
+      connection_token,
+      media,
+      post_info
+    });
+
+    const response = (await Axios.post(uri, data, config)).data;
 
     return response;
   }

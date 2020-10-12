@@ -1,43 +1,85 @@
 import middlewares from '@middlewares';
 import { AppModule } from './app.module';
 import { ConfigService } from '@nestjs/config';
-import { INestApplication } from '@nestjs/common';
+import { FastifyAdapter, NestFastifyApplication } from '@nestjs/platform-fastify';
 import { join } from 'path';
+import { Logger, ValidationPipe } from '@nestjs/common';
 import { NestFactory } from '@nestjs/core';
 import { readFileSync } from 'fs';
 import {
-  // HttpExceptionFilter,
   ForbiddenExceptionFilter,
   InternalServerErrorExceptionFilter,
   MongoExceptionFilter,
+  NotFoundExceptionFilter,
   UnauthorizedExceptionFilter,
   UnprocessableEntityExceptionFilter,
-  ValidationExceptionFilter,
+  ValidationExceptionFilter
 } from '@filters';
 
-async function bootstrap(): Promise<void> {
+const HandleGlobalProcess = () => {
+  process.on('uncaughtException', (error_details) => {
+    Logger.error({ error_details,
+      error_type: 'uncaughtException' });
+  });
+
+  process.on('unhandledRejection', (error_details) => {
+    Logger.error({ error_details,
+      error_type: 'unhandledRejection' });
+  });
+
+  process.on('SIGINT', (error_details) => {
+    Logger.error({ error_details,
+      error_type: 'SIGINT' });
+  });
+};
+
+const HandleAppSettings = async (app: NestFastifyApplication): Promise<void> => {
+  const config_service = app.get(ConfigService);
+  const port: number = config_service.get('APP.PORT') as number;
+  const prefix: string = config_service.get('APP.API_PREFIX') as string;
+
+  app.setGlobalPrefix(prefix);
+  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalFilters(
+    new InternalServerErrorExceptionFilter(),
+    new ForbiddenExceptionFilter(),
+    new UnauthorizedExceptionFilter(),
+    new UnprocessableEntityExceptionFilter(),
+    new ValidationExceptionFilter(),
+    new NotFoundExceptionFilter(),
+    new MongoExceptionFilter()
+  );
+
+  app.enableShutdownHooks();
+  app.enableCors({
+    credentials: true,
+    origin: true
+  });
+
+  await app.listen(port);
+};
+
+const bootstrap = async (): Promise<void> => {
   const cert = readFileSync(join(process.cwd(), 'src/cert', 'cert.crt'));
   const key = readFileSync(join(process.cwd(), 'src/cert', 'cert.key'));
-  const app: INestApplication = await NestFactory.create(AppModule, {
-    httpsOptions: {
-      key,
+  const fastify_adaptar = new FastifyAdapter({
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    caseSensitive: true,
+    http2: true,
+    https: {
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      allowHTTP1: true,
       cert,
+      key
     },
+    logger: true
   });
-  const configService = app.get(ConfigService);
-  const port: number = configService.get<number>('APP.PORT') as number;
-  const prefix: string = configService.get<string>('APP.API_PREFIX') as string;
-
-  process.on('uncaughtException', (error: Error) => {
-    console.error(error.message);
-    console.error(error.stack);
-    process.exit(1);
-  });
-
-  process.on('unhandledRejection', (error: Error) => {
-    console.error(error.message);
-    console.error(error.stack);
-    process.exit(1);
+  const app: NestFastifyApplication = await NestFactory.create<NestFastifyApplication>(AppModule, fastify_adaptar, {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
+    httpsOptions: {
+      cert,
+      key
+    }
   });
 
   try {
@@ -45,27 +87,11 @@ async function bootstrap(): Promise<void> {
       middleware(app);
     }
   } catch (err) {
-    console.error(err);
+    Logger.error(err);
   }
 
-  app.enableCors({
-    origin: ['https://localhost:3000', 'https://localhost:5000', 'http://localhost:5000'],
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-  });
-  app.setGlobalPrefix(prefix);
-  app.useGlobalFilters(
-    new InternalServerErrorExceptionFilter(),
-    // new HttpExceptionFilter(),
-    new ForbiddenExceptionFilter(),
-    new UnauthorizedExceptionFilter(),
-    new UnprocessableEntityExceptionFilter(),
-    new ValidationExceptionFilter(),
-    new MongoExceptionFilter(),
-  );
-
-  await app.listen(port);
-  console.log(`Application is running on: ${await app.getUrl()}`);
-}
+  HandleGlobalProcess();
+  HandleAppSettings(app);
+};
 
 bootstrap();

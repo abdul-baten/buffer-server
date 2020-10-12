@@ -1,39 +1,72 @@
 import { AuthGuard } from '@guards';
-import { Body, Controller, Get, HttpCode, HttpStatus, Post, Query, UseGuards } from '@nestjs/common';
-import { from, Observable } from 'rxjs';
-import { I_POST } from '@interfaces';
-import { PostDTO } from '@dtos';
+import {
+  Body,
+  Controller,
+  Get,
+  HttpStatus,
+  Param,
+  Post,
+  Response,
+  UseGuards
+} from '@nestjs/common';
+import { PostDto } from '@dtos';
 import { PostFacade } from '../facade/post.facade';
+import type { FastifyReply } from 'fastify';
+import type { IPost } from '@interfaces';
 
 @Controller('')
 export class PostController {
-  constructor(private readonly postFacade: PostFacade) {}
+  constructor (private readonly facade: PostFacade) {}
 
-  @Post('add')
+  @Get(':user_id')
   @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  addPost(@Body() addPostDTO: PostDTO): Observable<I_POST> {
-    return from(this.postFacade.addPost(addPostDTO));
+  public async getPosts (@Param('user_id') user_id: string, @Response() response: FastifyReply): Promise<void> {
+    const response_time: number = response.getResponseTime();
+    const posts: IPost[] = await this.facade.getPosts(user_id);
+
+    response.
+      header('x-response-time', response_time).
+      type('application/json').
+      status(HttpStatus.OK).
+      send(posts);
   }
 
   @Post('text-facebook-published')
   @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  publishFacebookText(@Body() addPostDTO: PostDTO): Observable<I_POST> {
-    return from(this.postFacade.publishFacebookText(addPostDTO));
+  public async publishFacebookText (@Body() add_post_dto: PostDto, @Response() response: FastifyReply): Promise<void> {
+    const response_time: number = response.getResponseTime();
+    const published_post: IPost = await this.facade.publishFacebookText(add_post_dto);
+
+    response.
+      header('x-response-time', response_time).
+      type('application/json').
+      status(HttpStatus.OK).
+      send(published_post);
+  }
+
+  @Post('text-linkedin-published')
+  @UseGuards(AuthGuard)
+  public async publishLinkedinText (@Body() add_post_dto: PostDto, @Response() response: FastifyReply): Promise<void> {
+    const response_time: number = response.getResponseTime();
+    const published_post: IPost = await this.facade.publishLinkedInText(add_post_dto);
+
+    response.
+      header('x-response-time', response_time).
+      type('application/json').
+      status(HttpStatus.OK).
+      send(published_post);
   }
 
   @Post('text-facebook-scheduled')
   @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.CREATED)
-  scheduleFacebookText(@Body() addPostDTO: PostDTO): Observable<I_POST> {
-    return from(this.postFacade.scheduleFacebookText(addPostDTO));
-  }
+  public async scheduleFacebookText (@Body() add_post_dto: PostDto, @Response() response: FastifyReply): Promise<void> {
+    const response_time: number = response.getResponseTime();
+    const scheduled_post: IPost = await this.facade.scheduleFacebookText(add_post_dto);
 
-  @Get('posts')
-  @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.OK)
-  getPosts(@Query('userID') userID: string): Observable<I_POST[]> {
-    return this.postFacade.getPosts(userID);
+    response.
+      header('x-response-time', response_time).
+      type('application/json').
+      status(HttpStatus.OK).
+      send(scheduled_post);
   }
 }

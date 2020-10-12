@@ -1,10 +1,9 @@
 import * as jsonTransformer from 'jsonata';
-import { I_USER } from '@interfaces';
-import { SanitizerUtil } from '@utils';
+import type { IUser } from '@interfaces';
 
 export class UserMapper {
-  static userResponseMapper(userInfo: Partial<I_USER>): I_USER {
-    const userMap = `
+  static userResponseMapper (user_info: Partial<IUser>): IUser {
+    const user = `
     {
       "id": $._id,
       "subscription": $.subscription,
@@ -15,8 +14,7 @@ export class UserMapper {
       "email": $.email
     }
     `;
-    const omittedUserInfo = SanitizerUtil.sanitizedResponse(userInfo);
 
-    return jsonTransformer(userMap).evaluate(omittedUserInfo);
+    return jsonTransformer(user).evaluate(user_info);
   }
 }

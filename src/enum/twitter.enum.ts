@@ -1,5 +1,5 @@
-export enum E_TW_UPLOAD_COMMAND {
-  INIT = 'INIT',
+export enum ETwitterUploadCommand {
   APPEND = 'APPEND',
   FINALIZE = 'FINALIZE',
+  INIT = 'INIT',
 }

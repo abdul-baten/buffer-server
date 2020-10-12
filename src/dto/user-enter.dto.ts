@@ -1,14 +1,12 @@
 import { IsDefined, IsEmail, IsString } from 'class-validator';
 
-class UserEnterDTO {
+export class UserEnterDto {
   @IsDefined()
-  @IsString()
   @IsEmail()
-  readonly email: string;
+  @IsString()
+  readonly user_email!: string;
 
   @IsDefined()
   @IsString()
-  readonly password: string;
+  readonly user_password!: string;
 }
-
-export { UserEnterDTO };

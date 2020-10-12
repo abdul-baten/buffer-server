@@ -1,196 +1,186 @@
-import { AxiosError } from 'axios';
-import { catchError, map, switchMap } from 'rxjs/operators';
-import { E_CONNECTION_TYPE, E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP, E_POST_STATUS, E_POST_TYPE } from '@enums';
-import { FacebookHelper, LinkedInHelper, TwitterHelper } from '@helpers';
-import { forkJoin, from, Observable, of } from 'rxjs';
-import { I_CONNECTION, I_POST } from '@interfaces';
-import { Injectable, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
-import { PostDTO } from '@dtos';
+import { Injectable } from '@nestjs/common';
 import { PostMapper } from '@mappers';
 import { PostService } from '../service/post.service';
-import { SanitizerUtil } from '@utils';
+import type { IPost } from '@interfaces';
+import type { PostDto } from '@dtos';
 
 @Injectable()
 export class PostFacade {
-  constructor(private readonly postService: PostService) {}
+  constructor (private readonly postService: PostService) {}
 
-  async addPost(postInfo: PostDTO): Promise<I_POST> {
-    const postRequest$ = this.postService.addPost(postInfo).pipe(
-        map((postInfo: I_POST) => SanitizerUtil.sanitizedResponse(postInfo)),
-        map((post: I_POST) => PostMapper.postResponseMapper(post)),
-      ),
-      { postConnection, postType, postStatus } = postInfo;
+  public async getPosts (user_id: string): Promise<IPost[]> {
+    const posts = await this.postService.getPosts(user_id);
+    const posts_length = posts.length;
+    const response = [];
 
-    const { connectionID, connectionType, connectionToken } = await this.postService.getConnection(postConnection.id as string);
+    for (let index = 0; index < posts_length; index += 1) {
+      const mapped_response = PostMapper.postResponseMapper(posts[index]);
 
-    const connectionRequest$ = from(
-      this.postToConnections(connectionID as string, connectionType as E_CONNECTION_TYPE, connectionToken as string, postType, postStatus, postInfo),
-    );
-
-    return forkJoin([connectionRequest$, postRequest$])
-      .pipe(
-        map(([_res, post]) => {
-          return post;
-        }),
-        catchError(error => {
-          console.warn(error);
-
-          throw new UnprocessableEntityException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.ADD_POST_ERROR));
-        }),
-      )
-      .toPromise();
-  }
-
-  getPosts(userID: string): Observable<I_POST[]> {
-    return this.postService.getPosts(userID).pipe(
-      map((posts: I_POST[]) => {
-        return posts.map((post: I_POST) => SanitizerUtil.sanitizedResponse(post));
-      }),
-      map((connections: I_POST[]) => {
-        return connections.map((connection: I_POST) => PostMapper.postResponseMapper(connection));
-      }),
-      map((connections: I_POST[]) => connections),
-      catchError(error => {
-        throw new InternalServerErrorException(error);
-      }),
-    );
-  }
-
-  async postToConnections(
-    connectionID: string,
-    connectionType: E_CONNECTION_TYPE,
-    connectionToken: string,
-    postType: E_POST_TYPE,
-    postStatus: E_POST_STATUS,
-    postInfo: PostDTO,
-  ): Promise<any> {
-    let connectionRequest$: Observable<any> = of(null);
-    if (postType === E_POST_TYPE.IMAGE) {
-      if (postStatus === E_POST_STATUS.PUBLISHED) {
-        switch (connectionType) {
-          case E_CONNECTION_TYPE.FACEBOOK_PAGE:
-          case E_CONNECTION_TYPE.FACEBOOK_GROUP:
-            connectionRequest$ = from(FacebookHelper.postImages(connectionID, connectionToken, postInfo)).pipe(map((response: any) => response));
-            break;
-
-          case E_CONNECTION_TYPE.LINKEDIN_PAGE:
-          case E_CONNECTION_TYPE.LINKEDIN_PROFILE:
-            connectionRequest$ = from(LinkedInHelper.postProfileMedia(postInfo, connectionID, connectionToken)).pipe(
-              map((response: any) => response),
-            );
-            break;
-
-          case E_CONNECTION_TYPE.TWITTER:
-            connectionRequest$ = from(TwitterHelper.postImages(postInfo, connectionToken)).pipe(map((response: any) => response));
-            break;
-
-          default:
-            connectionRequest$ = of(null);
-            break;
-        }
-      }
-    } else if (postType === E_POST_TYPE.VIDEO) {
-      if (postStatus === E_POST_STATUS.PUBLISHED) {
-        switch (connectionType) {
-          case E_CONNECTION_TYPE.FACEBOOK_PAGE:
-          case E_CONNECTION_TYPE.FACEBOOK_GROUP:
-            connectionRequest$ = from(FacebookHelper.postVideo(connectionID, connectionToken, postInfo)).pipe(map((response: any) => response));
-            break;
-
-          case E_CONNECTION_TYPE.LINKEDIN_PAGE:
-          case E_CONNECTION_TYPE.LINKEDIN_PROFILE:
-            connectionRequest$ = from(LinkedInHelper.postProfileVideo(postInfo, connectionID, connectionToken)).pipe(
-              map((response: any) => response),
-            );
-            break;
-
-          case E_CONNECTION_TYPE.TWITTER:
-            connectionRequest$ = from(TwitterHelper.postVideos(postInfo, connectionToken)).pipe(map((response: any) => response));
-            break;
-
-          default:
-            connectionRequest$ = of(null);
-            break;
-        }
-      }
-    } else {
-      if (postStatus === E_POST_STATUS.PUBLISHED) {
-        switch (connectionType) {
-          case E_CONNECTION_TYPE.FACEBOOK_PAGE:
-          case E_CONNECTION_TYPE.FACEBOOK_GROUP:
-            connectionRequest$ = from(FacebookHelper.postStatus(connectionID, connectionToken, postInfo.postCaption, E_POST_STATUS.PUBLISHED, '')).pipe(
-              map((response: any) => response),
-            );
-            break;
-
-          case E_CONNECTION_TYPE.LINKEDIN_PAGE:
-          case E_CONNECTION_TYPE.LINKEDIN_PROFILE:
-            connectionRequest$ = from(LinkedInHelper.postProfileStatus(connectionID, connectionToken, postInfo.postCaption)).pipe(
-              map((response: any) => response),
-            );
-            break;
-
-          case E_CONNECTION_TYPE.TWITTER:
-            connectionRequest$ = from(TwitterHelper.postStatus(postInfo.postCaption, connectionToken)).pipe(map((response: any) => response));
-            break;
-
-          default:
-            connectionRequest$ = of(null);
-            break;
-        }
-      } else {
-        connectionRequest$ = of(null);
-      }
+      response.push(mapped_response);
     }
 
-    return connectionRequest$.toPromise();
+    return response;
   }
 
-  publishFacebookText(postInfo: PostDTO): Observable<I_POST> {
+  /*
+   * Async postToConnections (
+   *   connection_id: string,
+   *   connectionType: EConnectionType,
+   *   connection_token: string,
+   *   postType: EPostType,
+   *   postStatus: EPostStatus,
+   *   postInfo: PostDto
+   * ): Promise<any> {
+   *   let connectionRequest$: Observable<any> = of(null);
+   */
+
+  /*
+   *   If (postType === EPostType.IMAGE) {
+   *     if (postStatus === EPostStatus.PUBLISHED) {
+   *       switch (connectionType) {
+   *       case EConnectionType.FACEBOOK_PAGE:
+   *       case EConnectionType.FACEBOOK_GROUP:
+   *         connectionRequest$ = from(FacebookHelper.postImages(connection_id, connection_token, postInfo)).pipe(map((response: any) => response));
+   *         break;
+   */
+
+  /*
+   *       Case EConnectionType.LINKEDIN_PAGE:
+   *       case EConnectionType.LINKEDIN_PROFILE:
+   *         connectionRequest$ = from(LinkedInHelper.postProfileMedia(postInfo, connection_id, connection_token)).pipe(map((response: any) => response));
+   *         break;
+   */
+
+  /*
+   *       Case EConnectionType.TWITTER:
+   *         connectionRequest$ = from(TwitterHelper.postImages(postInfo, connection_token)).pipe(map((response: any) => response));
+   *         break;
+   */
+
+  /*
+   *       Default:
+   *         connectionRequest$ = of(null);
+   *         break;
+   *       }
+   *     }
+   *   } else if (postType === EPostType.VIDEO) {
+   *     if (postStatus === EPostStatus.PUBLISHED) {
+   *       switch (connectionType) {
+   *       case EConnectionType.FACEBOOK_PAGE:
+   *       case EConnectionType.FACEBOOK_GROUP:
+   *         connectionRequest$ = from(FacebookHelper.postVideo(connection_id, connection_token, postInfo)).pipe(map((response: any) => response));
+   *         break;
+   */
+
+  /*
+   *       Case EConnectionType.LINKEDIN_PAGE:
+   *       case EConnectionType.LINKEDIN_PROFILE:
+   *         connectionRequest$ = from(LinkedInHelper.postProfileVideo(postInfo, connection_id, connection_token)).pipe(map((response: any) => response));
+   *         break;
+   */
+
+  /*
+   *       Case EConnectionType.TWITTER:
+   *         connectionRequest$ = from(TwitterHelper.postVideos(postInfo, connection_token)).pipe(map((response: any) => response));
+   *         break;
+   */
+
+  /*
+   *       Default:
+   *         connectionRequest$ = of(null);
+   *         break;
+   *       }
+   *     }
+   *   } else if (postStatus === EPostStatus.PUBLISHED) {
+   *     switch (connectionType) {
+   *     case EConnectionType.FACEBOOK_PAGE:
+   *     case EConnectionType.FACEBOOK_GROUP:
+   *       connectionRequest$ = from(
+   * FacebookHelper.postStatus(connection_id, connection_token, postInfo.postCaption, EPostStatus.PUBLISHED, '')).pipe(map((response: any) => response)
+   * );
+   *       break;
+   */
+
+  /*
+   *     Case EConnectionType.LINKEDIN_PAGE:
+   *     case EConnectionType.LINKEDIN_PROFILE:
+   *       connectionRequest$ = from(LinkedInHelper.postStatus(connection_id, connection_token, postInfo.postCaption)).pipe(map((response: any) => response));
+   *       break;
+   */
+
+  /*
+   *     Case EConnectionType.TWITTER:
+   *       connectionRequest$ = from(TwitterHelper.postStatus(postInfo.postCaption, connection_token)).pipe(map((response: any) => response));
+   *       break;
+   */
+
+  /*
+   *     Default:
+   *       connectionRequest$ = of(null);
+   *       break;
+   *     }
+   *   } else {
+   *     connectionRequest$ = of(null);
+   *   }
+   */
+
+  /*
+   *   Return connectionRequest$.toPromise();
+   * }
+   */
+
+  public async publishFacebookText (post_info_dto: PostDto): Promise<IPost> {
     const {
-      postCaption,
-      postStatus,
-      postScheduleDateTime,
-      postConnection: { id },
-    } = postInfo;
-    const connection$ = from(this.postService.getConnection(id as string));
-    return connection$.pipe(
-      switchMap(({ connectionID = '', connectionToken = '' }: I_CONNECTION) => {
-        return this.postService.postFacebookStatus(connectionID as string, connectionToken as string, postCaption, postStatus, postScheduleDateTime);
-      }),
-      map(() => (postInfo as unknown) as I_POST),
-      catchError((error: AxiosError) => {
-        throw new UnprocessableEntityException({
-          errorCode: error.response?.status,
-          errorDetails: error.response?.data,
-          httpCode: E_ERROR_MESSAGE.ADD_POST_ERROR,
-          message: E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.ADD_POST_ERROR),
-        });
-      }),
-    );
+      post_message,
+      post_status,
+      post_date_time,
+      post_connection: { id }
+    } = post_info_dto;
+    const { connection_id, connection_token } = await this.postService.getConnection(id as string);
+
+    await this.postService.postFacebookStatus({
+      connection_id,
+      connection_token,
+      post_date_time,
+      post_message,
+      post_status
+    });
+    const added_post = await this.postService.addPost(post_info_dto);
+    const response = PostMapper.postResponseMapper(added_post);
+
+    return response;
   }
 
-  scheduleFacebookText(postInfo: PostDTO): Observable<I_POST> {
+  public async scheduleFacebookText (post_info_dto: PostDto): Promise<IPost> {
     const {
-      postCaption,
-      postStatus,
-      postScheduleDateTime,
-      postConnection: { id },
-    } = postInfo;
-    const connection$ = from(this.postService.getConnection(id as string));
-    return connection$.pipe(
-      switchMap(({ connectionID = '', connectionToken = '' }: I_CONNECTION) => {
-        return this.postService.postFacebookStatus(connectionID as string, connectionToken as string, postCaption, postStatus, postScheduleDateTime);
-      }),
-      map(() => (postInfo as unknown) as I_POST),
-      catchError((error: AxiosError) => {
-        throw new UnprocessableEntityException({
-          errorCode: error.response?.status,
-          errorDetails: error.response?.data,
-          httpCode: E_ERROR_MESSAGE.ADD_POST_ERROR,
-          message: E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.ADD_POST_ERROR),
-        });
-      }),
-    );
+      post_message,
+      post_status,
+      post_date_time,
+      post_connection: { id }
+    } = post_info_dto;
+    const { connection_id, connection_token } = await this.postService.getConnection(id as string);
+    const scheduled_post = await this.postService.postFacebookStatus({
+      connection_id,
+      connection_token,
+      post_date_time,
+      post_message,
+      post_status
+    });
+
+    return scheduled_post as unknown as IPost;
+  }
+
+  public async publishLinkedInText (post_info_dto: PostDto): Promise<IPost> {
+    const {
+      post_message,
+      post_connection: { id }
+    } = post_info_dto;
+    const { connection_id } = await this.postService.getConnection(id as string);
+
+    await this.postService.postLinkedinStatus(connection_id, post_message);
+    const added_post = await this.postService.addPost(post_info_dto);
+    const response = PostMapper.postResponseMapper(added_post);
+
+    return response;
   }
 }

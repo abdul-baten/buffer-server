@@ -1,38 +1,41 @@
-import { InternalServerErrorException } from '@nestjs/common';
-import { LoggerUtil } from './logger.util';
 import { createCipheriv, createDecipheriv, createHash, randomBytes } from 'crypto';
+import { resolve } from 'bluebird';
 
-const resizedIV = Buffer.allocUnsafe(16),
-  iv = createHash('sha256')
-    .update(randomBytes(32))
-    .digest();
+// eslint-disable-next-line no-magic-numbers
+const resized_iv = Buffer.allocUnsafe(16),
+  iv = createHash('sha256').
+    // eslint-disable-next-line no-magic-numbers
+    update(randomBytes(32)).
+    digest();
 
-iv.copy(resizedIV);
+iv.copy(resized_iv);
 
 export class CryptoUtil {
-  private static getHashedKey(key: string): Buffer {
-    return createHash('sha256')
-      .update(key)
-      .digest();
+  private static async getHashedKey (key: string): Promise<Buffer> {
+    const buffer = await resolve(createHash('sha256').
+      update(key).
+      digest());
+
+    return buffer;
   }
 
-  public static encryptData(text: string, encryptionKey: string): string {
-    const key = this.getHashedKey(encryptionKey);
-    let cipher = createCipheriv('aes256', key, resizedIV);
-    let encrypted = cipher.update(text, 'binary', 'hex');
-    encrypted += cipher.final('hex');
+  public static async encryptData (text: any, encryption_key: string): Promise<string> {
+    const key = await this.getHashedKey(encryption_key);
+    const cipher = await resolve(createCipheriv('aes256', key, resized_iv));
+    let encrypted = await resolve(cipher.update(text, 'binary', 'hex'));
+
+    encrypted += await resolve(cipher.final('hex'));
+
     return encrypted;
   }
 
-  static async decryptData(text: any, encryptionKey: string): Promise<string> {
-    try {
-      const key = this.getHashedKey(encryptionKey);
-      let decipher = createDecipheriv('aes256', key, resizedIV);
-      let decrypted = decipher.update(text, 'hex', 'binary');
-      return decrypted + decipher.final('binary');
-    } catch (error) {
-      LoggerUtil.logError(error);
-      throw new InternalServerErrorException(error);
-    }
+  static async decryptData (text: string, encryption_key: string): Promise<string> {
+    const key = await this.getHashedKey(encryption_key);
+    const decipher = await resolve(createDecipheriv('aes256', key, resized_iv));
+    let decrypted = await resolve(decipher.update(text, 'hex', 'binary'));
+
+    decrypted += await resolve(decipher.final('binary'));
+
+    return decrypted;
   }
 }

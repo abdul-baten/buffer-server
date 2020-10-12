@@ -1,4 +1,4 @@
-export enum E_SUBSCRIPTION_PLAN {
+export enum ESubscriptionPlan {
   ADVANCED = 'advanced',
   AGENCY = 'agency',
   PROFESSIONAL = 'professional',

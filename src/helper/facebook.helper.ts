@@ -1,121 +1,119 @@
 import Axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { catchError, map, switchMap } from 'rxjs/operators';
-import { ErrorHelper } from './error.helper';
-import { forkJoin, from, of, throwError } from 'rxjs';
-import { I_FB_STATUS_SUCCESS } from '@interfaces';
-import { PostDTO } from '@dtos';
-import { promisifyAll } from 'bluebird';
-import { to } from 'await-to-js';
+import to from 'await-to-js';
+import { EPostStatus } from '@enums';
+import { FacebookErrorCodes } from '@errors';
+import { Injectable, UnprocessableEntityException } from '@nestjs/common';
+import type { IFbPostPayload, IFbResponse, IPost } from '@interfaces';
 
-import requestPromise = require('request-promise');
-import { E_POST_STATUS } from '@enums';
-
-const Graph = require('fbgraph');
-promisifyAll(Graph);
-
-export class FacebookHelper {
-  static async postStatus(
-    connectionID: string,
-    connectionToken: string,
-    postCaption: string,
-    postStatus: E_POST_STATUS,
-    postScheduleDateTime: string,
-  ): Promise<I_FB_STATUS_SUCCESS> {
-    const options: AxiosRequestConfig = {
+@Injectable()
+export class FacebookHelperService {
+  private makeConfig (post_payload: IFbPostPayload): AxiosRequestConfig {
+    const { connection_token, post_message, post_status, post_date_time } = post_payload;
+    const config: AxiosRequestConfig = {
       params: {
-        message: postCaption,
-        access_token: connectionToken,
-      },
+        access_token: connection_token,
+        message: post_message
+      }
     };
 
-    
-    
-
-    if (postStatus === E_POST_STATUS.SCHEDULED) {
-      options.params.published = false;
-      options.params.scheduled_publish_time = postScheduleDateTime;
+    if (post_status === EPostStatus.SCHEDULED) {
+      config.params.published = false;
+      config.params.scheduled_publish_time = post_date_time;
     }
 
-    console.warn(postStatus);
-    console.warn(options);
+    return config;
+  }
 
-    const url = `https://graph.facebook.com/${connectionID}/feed`;
-    const [error, response] = await to<AxiosResponse>(Axios.post(url, '', options));
+  async postStatus (post_payload: IFbPostPayload): Promise<IFbResponse> {
+    const { connection_id } = post_payload;
+    const config = this.makeConfig(post_payload);
+    const uri = `https://graph.facebook.com/${connection_id}/feed`;
+
+    const [error, response] = await to(Axios.post(uri, null, config));
 
     if (error) {
-      return throwError(error).toPromise();
+      throw new UnprocessableEntityException({
+        ...FacebookErrorCodes.COULD_NOT_POST,
+        error_details: response?.data });
     }
 
     const { data } = response as AxiosResponse;
+
     return { data };
   }
 
-  static async getPublishedMediaIDs(postInfo: PostDTO, connectionID: string, connectionToken: string): Promise<any[]> {
-    try {
-      const parallelRequests: any[] = [];
-
-      for (let _ of postInfo.postMedia) {
-        const getIdApiParams = {
-          method: 'POST',
-          uri: `https://graph.facebook.com/${connectionID}/photos`,
-          qs: {
-            access_token: connectionToken,
-            published: false,
-            url: 'https://images.unsplash.com/photo-1590931743459-ae6695ba1fe7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1500&q=80',
-          },
-        };
-        parallelRequests.push(of(JSON.parse(await requestPromise(getIdApiParams))));
+  private makeRequests (connection_id: string, connection_token: string, medias_length: number) {
+    const requests: Promise<AxiosResponse<string>>[] = [];
+    const uri = `https://graph.facebook.com/${connection_id}/photos`;
+    const options: AxiosRequestConfig = {
+      params: {
+        access_token: connection_token,
+        published: false,
+        url: 'https://images.unsplash.com/photo-1590931743459-ae6695ba1fe7?ixlib=rb-1.2.1&auto=format&fit=crop&w=1500&q=80'
       }
-
-      return parallelRequests;
-    } catch (error) {
-      return ErrorHelper.catchFBError(JSON.parse(error.error).error).toPromise();
-    }
-  }
-
-  static async postImages(connectionID: string, connectionToken: string, postInfo: PostDTO): Promise<I_FB_STATUS_SUCCESS> {
-    const postParams$ = await this.getPublishedMediaIDs(postInfo, connectionID, connectionToken);
-
-    return (forkJoin(...postParams$)
-      .pipe(
-        map(([...responses]) => {
-          let postParams: any = {
-            access_token: connectionToken,
-            message: postInfo.postCaption,
-          };
-          const mediasIDs = [...responses];
-          mediasIDs.forEach((mediaId: I_FB_STATUS_SUCCESS, index: number) => {
-            postParams[`attached_media[${index}]`] = { media_fbid: mediaId };
-            // postParams[`attached_media[${index}]`] = { media_fbid: mediaId.id };
-          });
-          return postParams;
-        }),
-        switchMap((postParams: Record<string, string>) => {
-          return from(Graph.postAsync(`${connectionID}/feed`, postParams));
-        }),
-        catchError(error => ErrorHelper.catchFBError(error)),
-      )
-      .toPromise() as unknown) as I_FB_STATUS_SUCCESS;
-  }
-
-  static async postVideo(connectionID: string, connectionToken: string, postInfo: PostDTO): Promise<I_FB_STATUS_SUCCESS> {
-    const getIdApiParams = {
-      method: 'POST',
-      uri: `https://graph-video.facebook.com/${connectionID}/videos`,
-      qs: {
-        access_token: connectionToken,
-        description: postInfo.postCaption,
-        file_url: 'https://static.videezy.com/system/resources/previews/000/011/317/original/openning_small_can.mp4',
-      },
     };
 
-    return from(requestPromise(getIdApiParams))
-      .pipe(
-        map((response: any) => response),
-        catchError(error => {
-          return ErrorHelper.catchFBError(JSON.parse(error.error).error);
-        }),
-      )
-      .toPromise();
+    for (let index = 0; index < medias_length; index += 1) {
+      requests.push(Axios.post(uri, null, options));
+    }
+
+    return requests;
+  }
+
+  public async getPublishedMediaIDs (post_info: IPost, connection_id:string, connection_token:string): Promise<string[]> {
+    const medias_length = post_info.post_media?.length as number;
+    const requests = this.makeRequests(connection_id, connection_token, medias_length);
+    const [error] = await to(Promise.all(requests));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    // Return responses as string[];
+    return ['sasas'];
+  }
+
+  async postImages (post_payload: IFbPostPayload): Promise<IFbResponse> {
+    const { post_info, connection_id, connection_token } = post_payload;
+    const media_ids = await this.getPublishedMediaIDs(post_info as IPost, connection_id, connection_token);
+    const media_ids_length = media_ids.length;
+
+    const uri = `https://graph.facebook.com/${connection_id}/feed`;
+    const config = this.makeConfig(post_payload);
+
+    for (let index = 0; index < media_ids_length; index += 1) {
+      config.params[`attached_media[${index}]`] = { media_fbid: media_ids[index] };
+    }
+
+    const [error, response] = await to(Axios.post(uri, null, config));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const { data } = response as AxiosResponse;
+
+    return data;
+  }
+
+  async postVideo (post_payload: IFbPostPayload): Promise<IFbResponse> {
+    const { post_info, connection_id, connection_token } = post_payload;
+    const uri = `https://graph-video.facebook.com/${connection_id}/videos`;
+    const config: AxiosRequestConfig = {
+      params: {
+        access_token: connection_token,
+        description: post_info?.post_message,
+        file_url: 'https://.videezy.com/system/resources/previews/000/011/317/original/openning_small_can.mp4'
+      }
+    };
+    const [error, response] = await to(Axios.post(uri, null, config));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    const { data } = response as AxiosResponse;
+
+    return data;
   }
 }

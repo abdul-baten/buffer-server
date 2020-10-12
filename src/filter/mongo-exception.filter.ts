@@ -1,30 +1,34 @@
-import * as httpContext from 'express-http-context';
-import { E_CONTEXT } from '@enums';
-import { I_ERROR } from '@interfaces';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpStatus
+} from '@nestjs/common';
+import { EContext } from '@enums';
+import { get, set } from 'express-http-context';
 import { MongoError } from 'mongodb';
-import { Response } from 'express';
-import { ArgumentsHost, Catch, ExceptionFilter, HttpStatus } from '@nestjs/common';
+import { parse as parseStack } from 'error-stack-parser';
+import type { FastifyReply } from 'fastify';
 
 @Catch(MongoError)
 export class MongoExceptionFilter implements ExceptionFilter {
-  catch(exception: MongoError, host: ArgumentsHost) {
+  catch (exception: MongoError, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const statusCode = HttpStatus.INTERNAL_SERVER_ERROR;
+    const response = ctx.getResponse<FastifyReply>();
+    const { code, message } = exception;
+    const context = get(EContext.REQUEST_LOGGING);
 
-    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
-    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
+    set(EContext.REQUEST_LOGGING, {
       ...context,
-      isError: true,
-      errorDetails: exception,
+      error_message: message,
+      error_stack: parseStack(exception),
+      is_error: true
     });
 
-    const name = MongoExceptionFilter.name;
-    console.warn(name);
-
-    response.status(statusCode).json({
-      statusCode,
-      errorMessage: exception.errmsg,
-    } as I_ERROR);
+    response.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+      error_code: code,
+      http_code: 500,
+      message
+    });
   }
 }

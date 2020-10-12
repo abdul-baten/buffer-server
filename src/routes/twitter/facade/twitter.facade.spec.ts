@@ -1,12 +1,12 @@
 import { TwitterFacade } from './twitter.facade';
 import { Test, TestingModule } from '@nestjs/testing';
 
-describe('TwitterFacade', () => {
+describe('Twitter Facade', () => {
   let service: TwitterFacade;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [TwitterFacade],
+      providers: [TwitterFacade]
     }).compile();
 
     service = module.get<TwitterFacade>(TwitterFacade);

@@ -1,12 +1,12 @@
 import { InsightController } from './insight.controller';
 import { Test, TestingModule } from '@nestjs/testing';
 
-describe('InsightController', () => {
+describe('Insight Controller', () => {
   let controller: InsightController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [InsightController],
+      controllers: [InsightController]
     }).compile();
 
     controller = module.get<InsightController>(InsightController);

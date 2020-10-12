@@ -1,25 +1,28 @@
 import { ConfigService } from '@nestjs/config';
 import { Injectable } from '@nestjs/common';
-import { MongooseOptionsFactory, MongooseModuleOptions } from '@nestjs/mongoose';
+import type { MongooseModuleOptions, MongooseOptionsFactory } from '@nestjs/mongoose';
 
 @Injectable()
 export class DatabaseConfigUtil implements MongooseOptionsFactory {
-  constructor(private readonly configService: ConfigService) {}
+  constructor (private readonly configService: ConfigService) {}
 
-  private readonly ADAPTAR_PASSWORD: string = this.configService.get<string>('DATABASE.ADAPTAR_PASSWORD') as string;
+  createMongooseOptions (): MongooseModuleOptions {
+    const password = this.configService.get('DATABASE.ADAPTAR_PASSWORD');
+    const uri = this.configService.get('DATABASE.ADAPTAR_URI').trim().
+      replace('<password>', password);
 
-  private readonly ADAPTAR_URI = (this.configService.get<string>('DATABASE.ADAPTAR_URI') as string)
-    .trim()
-    .replace('<password>', this.ADAPTAR_PASSWORD);
-
-  createMongooseOptions(): MongooseModuleOptions {
     return {
-      uri: this.ADAPTAR_URI,
+      uri,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       useCreateIndex: true,
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
-      validateOptions: true,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
       useFindAndModify: false,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      useNewUrlParser: true,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      useUnifiedTopology: true,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      validateOptions: true
     };
   }
 }

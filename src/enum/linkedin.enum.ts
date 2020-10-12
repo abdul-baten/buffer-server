@@ -1,10 +1,10 @@
-export enum E_MEMBER_NETWORK_VISIBILITY {
+export enum ENetworkVisibility {
   CONNECTIONS = 'CONNECTIONS',
   LOGGED_IN = 'LOGGED_IN',
   PUBLIC = 'PUBLIC',
 }
 
-export enum E_LIFE_CYCLE_STATE {
+export enum ELifeCycleState {
   DELETED = 'DELETED',
   DRAFT = 'DRAFT',
   PROCESSING = 'PROCESSING',
@@ -13,7 +13,7 @@ export enum E_LIFE_CYCLE_STATE {
   PUBLISHED_EDITED = 'PUBLISHED_EDITED',
 }
 
-export enum E_SHARE_MEDIA_CATEGORY {
+export enum EShareMediaCategory {
   ANSWER = 'ANSWER',
   ARTICLE = 'ARTICLE',
   CAROUSEL = 'CAROUSEL',
@@ -30,7 +30,7 @@ export enum E_SHARE_MEDIA_CATEGORY {
   VIDEO = 'VIDEO',
 }
 
-export enum E_MEDIA_STATUS {
+export enum EMediaStatus {
   FAILED = 'FAILED',
   PROCESSING = 'PROCESSING',
   READY = 'READY',

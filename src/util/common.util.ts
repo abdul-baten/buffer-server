@@ -1,41 +1,27 @@
-import * as stringify from 'json-stringify-safe';
-import isJSON = require('is-json');
+import { method } from 'bluebird';
+import { randomBytes } from 'crypto';
 
 export class CommonUtil {
-  static isObject(val: any): boolean {
-    return val != null && typeof val === 'object' && Array.isArray(val) === false;
+  public static parseJson (): any {
+    return method(JSON.parse);
   }
 
-  static isObjectObject(obj: Record<string, any>): boolean {
-    return CommonUtil.isObject(obj) === true && Object.prototype.toString.call(obj) === '[object Object]';
+  public static stringifyJson (): any {
+    return method(JSON.stringify);
   }
 
-  static isPlainObject(obj: Record<string, any>): boolean {
-    if (CommonUtil.isObjectObject(obj) === false) return false;
+  public static base64String (): string {
+    // eslint-disable-next-line no-magic-numbers
+    const bytes = randomBytes(12);
+    const bytes_string = bytes.toString('base64');
+    const sanitized_string = bytes_string.
+      // eslint-disable-next-line require-unicode-regexp
+      replace(/\+/g, '-').
+      // eslint-disable-next-line require-unicode-regexp
+      replace(/\//g, '_').
+      // eslint-disable-next-line require-unicode-regexp
+      replace(/[=]/g, '');
 
-    // If has modified constructor
-    const ctor = obj.constructor;
-    if (typeof ctor !== 'function') return false;
-
-    // If has modified prototype
-    const prot = ctor.prototype;
-    if (CommonUtil.isObjectObject(prot) === false) return false;
-
-    // If constructor does not have an Object-specific method
-    if (prot.hasOwnProperty('isPrototypeOf') === false) {
-      return false;
-    }
-
-    // Most likely a plain Object
-    return true;
-  }
-
-  static isValidJSON(obj: Record<string, any>): boolean {
-    return isJSON(obj);
-  }
-
-  static getSerializedJSON(obj: Record<string, any>): string {
-    const jsonStringify = stringify(CommonUtil.isObject(obj) ? obj : {}, null, 2);
-    return jsonStringify || '{}';
+    return sanitized_string;
   }
 }

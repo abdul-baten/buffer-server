@@ -1,12 +1,12 @@
 import { InstagramFacade } from './instagram.facade';
 import { Test, TestingModule } from '@nestjs/testing';
 
-describe('InstagramFacade', () => {
+describe('Instagram Facade', () => {
   let service: InstagramFacade;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [InstagramFacade],
+      providers: [InstagramFacade]
     }).compile();
 
     service = module.get<InstagramFacade>(InstagramFacade);

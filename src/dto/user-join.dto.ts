@@ -1,17 +1,17 @@
 import { IsAlphanumeric, IsDefined, IsEmail, IsString } from 'class-validator';
 
-export class UserJoinDTO {
+export class UserJoinDto {
   @IsDefined()
   @IsString()
-  fullName: string;
+  readonly full_name!: string;
 
   @IsDefined()
-  @IsString()
   @IsEmail()
-  email: string;
+  @IsString()
+  readonly email!: string;
 
+  @IsAlphanumeric()
   @IsDefined()
   @IsString()
-  @IsAlphanumeric()
-  password: string;
+  readonly password!: string;
 }

@@ -1,29 +1,32 @@
-import { from, Observable } from 'rxjs';
-import { I_CONNECTION, I_LN_ACCESS_TOKEN_RESPONSE } from '@interfaces';
 import { Injectable } from '@nestjs/common';
-import { LinkedInHelper } from '@helpers';
+import { LinkedInHelperService } from '@helpers';
+import type { IConnection } from '@interfaces';
 
 @Injectable()
 export class LinkedInService {
-  constructor() {}
+  constructor (private readonly linkedinHelperService:LinkedInHelperService) {}
 
-  authorize(connectionType: string): string {
-    const redirectUrl = LinkedInHelper.authorize(connectionType);
-    return redirectUrl;
+  public async authorize (connection_type: string): Promise<string> {
+    const redirect_uri = await this.linkedinHelperService.authorize(connection_type);
+
+    return redirect_uri;
   }
 
-  getAccessToken(connectionType: string, code: string): Observable<I_LN_ACCESS_TOKEN_RESPONSE> {
-    const accessTokenResponse = LinkedInHelper.getAccessToken(connectionType, code);
-    return from(accessTokenResponse);
+  public async getAccessToken (connection_type: string, code: string): Promise<string> {
+    const access_token = await this.linkedinHelperService.getAccessToken(connection_type, code);
+
+    return access_token;
   }
 
-  getUserInfo(accessToken: string): Observable<I_CONNECTION> {
-    const userInfoResponse$ = LinkedInHelper.getUserInfo(accessToken);
-    return from(userInfoResponse$);
+  public async getUserInfo (connection_token: string): Promise<IConnection> {
+    const user = await this.linkedinHelperService.getUserInfo(connection_token);
+
+    return user;
   }
 
-  getUserOrgs(accessToken: string): Observable<I_CONNECTION[]> {
-    const userInfoResponse$ = LinkedInHelper.getUserOrgs(accessToken);
-    return from(userInfoResponse$);
+  public async getUserOrgs (connection_token: string): Promise<IConnection[]> {
+    const organizations = await this.linkedinHelperService.getUserOrgs(connection_token);
+
+    return organizations;
   }
 }

@@ -1,11 +1,9 @@
-import { ConnectionHelper } from './connection.helper';
-import { ErrorHelper } from './error.helper';
-import { FacebookHelper } from './facebook.helper';
-import { InsightHelper } from './insight.helper';
-import { LinkedInHelper } from './linkedin.helper';
-import { MediaHelper } from './media.helper';
-import { PostHelper } from './post.helper';
-import { TwitterHelper } from './twitter.helper';
-import { UserHelper } from './user.helper';
-
-export { ConnectionHelper, ErrorHelper, FacebookHelper, InsightHelper, LinkedInHelper, MediaHelper, PostHelper, TwitterHelper, UserHelper };
+export * from './connection.helper';
+export * from './facebook.helper';
+export * from './insight.helper';
+export * from './linkedin.helper';
+export * from './media.helper';
+export * from './post.helper';
+export * from './redis.helper';
+export * from './twitter.helper';
+export * from './user.helper';

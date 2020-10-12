@@ -1,15 +1,18 @@
-// tslint:disable-next-line
-export interface I_INSIGHT {
+
+export interface IInsight {
   [key: string]: Record<string, any> | string | number;
 }
 
-// tslint:disable-next-line
-export interface I_INS_TOTAL {
+export interface IInsightTotal {
   total: number;
 }
 
-// tslint:disable-next-line
-export interface I_INS_CHART extends I_INS_TOTAL {
+export interface IInsightChart extends IInsightTotal {
   categories?: string[];
   response: number[];
+}
+
+export interface IInsightBase {
+  categories: string[];
+  id: string;
 }

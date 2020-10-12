@@ -1,12 +1,12 @@
 import { LinkedInService } from './linkedin.service';
 import { Test, TestingModule } from '@nestjs/testing';
 
-describe('LinkedInService', () => {
+describe('LinkedIn Service', () => {
   let service: LinkedInService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [LinkedInService],
+      providers: [LinkedInService]
     }).compile();
 
     service = module.get<LinkedInService>(LinkedInService);

@@ -1,31 +1,37 @@
-import { configuration } from '@config';
-import { from, Observable } from 'rxjs';
-import { I_MEDIA } from '@interfaces';
-import { MediaDTO } from '@dtos';
-import { Model } from 'mongoose';
+import { ConfigService } from '@nestjs/config';
+import { Injectable } from '@nestjs/common';
+import { resolve } from 'bluebird';
 import { unlinkSync } from 'fs';
+import type { IMedia } from '@interfaces';
+import type { MediaDto } from '@dtos';
+import type { Model } from 'mongoose';
 
-const UPLOAD_DIR = configuration.default.APP.UPLOAD_DIR;
+@Injectable()
+export class MediaHelperService {
+  constructor (private readonly configService: ConfigService) {}
 
-export class MediaHelper {
-  static addMedia(mediaModel: Model<I_MEDIA>, mediaInfo: MediaDTO | I_MEDIA): Observable<I_MEDIA> {
-    const media = new mediaModel(mediaInfo),
-      savedMedia$ = media.save();
+  public async addMedia (model: Model<IMedia>, media_info: MediaDto | IMedia): Promise<IMedia> {
+    const media_model = new model(media_info);
+    const media = await media_model.save();
 
-    return from(savedMedia$);
+    return media;
   }
 
-  static deleteMedia(mediaModel: Model<I_MEDIA>, _id: string): Observable<I_MEDIA> {
-    return from(
-      mediaModel
-        .findOneAndDelete({ _id })
-        .lean()
-        .exec(),
-    );
+  public async deleteMedia (model: Model<IMedia>, media_id: string): Promise<IMedia> {
+    const media = await model.
+      findOneAndDelete({ _id: media_id }).
+      lean().
+      exec();
+
+    await this.deleteMediaFromStorage(media?.media_name as string);
+
+    return media as IMedia;
   }
 
-  static deleteMediaFromStorage(mediaToDelete: string): void {
-    const mediaDeletePath = `${UPLOAD_DIR}/${mediaToDelete}`;
-    unlinkSync(mediaDeletePath);
+  private async deleteMediaFromStorage (media_to_delete: string): Promise<void> {
+    const media_dir = this.configService.get('APP.UPLOAD_DIR');
+    const media_path = `${media_dir}/${media_to_delete}`;
+
+    await resolve(unlinkSync(media_path));
   }
 }

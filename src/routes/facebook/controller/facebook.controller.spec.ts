@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { FacebookController } from './facebook.controller';
+import { Test, TestingModule } from '@nestjs/testing';
 
-describe('FacebookController', () => {
+describe('Facebook Controller', () => {
   let controller: FacebookController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [FacebookController],
+      controllers: [FacebookController]
     }).compile();
 
     controller = module.get<FacebookController>(FacebookController);

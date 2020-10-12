@@ -1,12 +1,12 @@
 import { InsightFacade } from './insight.facade';
 import { Test, TestingModule } from '@nestjs/testing';
 
-describe('InsightFacade', () => {
+describe('Insight Facade', () => {
   let service: InsightFacade;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [InsightFacade],
+      providers: [InsightFacade]
     }).compile();
 
     service = module.get<InsightFacade>(InsightFacade);

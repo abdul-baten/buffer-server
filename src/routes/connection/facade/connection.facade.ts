@@ -1,55 +1,36 @@
-import { AddConnectionDTO } from '@dtos';
-import { catchError, map } from 'rxjs/operators';
 import { ConnectionMapper } from '@mappers';
 import { ConnectionService } from '../service/connection.service';
-import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
-import { I_CONNECTION } from '@interfaces';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
-import { Observable } from 'rxjs';
-import { SanitizerUtil } from '@utils';
+import { Injectable } from '@nestjs/common';
+import type { AddConnectionDto } from '@dtos';
+import type { IConnection } from '@interfaces';
 
 @Injectable()
 export class ConnectionFacade {
-  constructor(private readonly connectionService: ConnectionService) {}
+  constructor (private readonly connectionService: ConnectionService) {}
 
-  getConnections(userID: string): Observable<I_CONNECTION[]> {
-    return this.connectionService.getConnections(userID).pipe(
-      map((connections: I_CONNECTION[]) => {
-        return connections.map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection));
-      }),
-      map((connections: I_CONNECTION[]) => {
-        return connections.map((connection: I_CONNECTION) => ConnectionMapper.connectionsResponseMapper(connection));
-      }),
-      map((connections: I_CONNECTION[]) => connections),
-      catchError(error => {
-        throw new InternalServerErrorException(error);
-      }),
-    );
+  public async getConnections (user_id: string): Promise<IConnection[]> {
+    const connections: IConnection[] = await this.connectionService.getConnections(user_id);
+    const connections_length: number = connections.length;
+    const response: IConnection[] = [];
+
+    for (let index = 0; index < connections_length; index += 1) {
+      response.push(ConnectionMapper.connectionsResponseMapper(connections[index]));
+    }
+
+    return response;
   }
 
-  addConnection(connectionDTO: AddConnectionDTO): Observable<I_CONNECTION> {
-    return this.connectionService.addConnection(connectionDTO).pipe(
-      map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection)),
-      map((connection: I_CONNECTION) => ConnectionMapper.connectionsResponseMapper(connection)),
-      catchError(error => {
-        throw new InternalServerErrorException(error);
-      }),
-    );
+  public async addConnection (add_connection_dto: AddConnectionDto): Promise<IConnection> {
+    const added_connection: IConnection = await this.connectionService.addConnection(add_connection_dto);
+    const response: IConnection = ConnectionMapper.connectionsResponseMapper(added_connection);
+
+    return response;
   }
 
-  deleteConnection(deletedID: string): Observable<I_CONNECTION> {
-    return this.connectionService.deleteConnection(deletedID).pipe(
-      map((connection: I_CONNECTION) => SanitizerUtil.sanitizedResponse(connection)),
-      map((connection: I_CONNECTION) => {
-        return ConnectionMapper.connectionsResponseMapper(connection);
-      }),
-      map((connection: I_CONNECTION) => connection),
-      catchError(() => {
-        throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.CONNECTION_DELETE_ERROR),
-          E_ERROR_MESSAGE.CONNECTION_DELETE_ERROR,
-        );
-      }),
-    );
+  public async deleteConnection (connection_id: string, connection_user_id: string): Promise<IConnection> {
+    const deleted_connection: IConnection = await this.connectionService.deleteConnection(connection_id, connection_user_id);
+    const response: IConnection = ConnectionMapper.connectionsResponseMapper(deleted_connection);
+
+    return response;
   }
 }

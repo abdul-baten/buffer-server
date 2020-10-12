@@ -1,6 +1,4 @@
-import { ConnectionSchema } from './connection.schema';
-import { MediaSchema } from './media.schema';
-import { PostSchema } from './post.schema';
-import { UserSchema } from './user.schema';
-
-export { ConnectionSchema, MediaSchema, PostSchema, UserSchema };
+export * from './connection.schema';
+export * from './media.schema';
+export * from './post.schema';
+export * from './user.schema';

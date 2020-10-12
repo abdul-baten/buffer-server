@@ -1,22 +1,30 @@
+/* eslint-disable no-invalid-this */
+/* eslint-disable @typescript-eslint/no-this-alias */
+/* eslint-disable consistent-this */
 import { hash } from 'bcrypt';
 import { HookNextFunction, Schema } from 'mongoose';
 import { UserDefinition } from '@definitions';
 
-const SALT_ROUNDS = 12;
+const salt_rounds = 12;
 
 export const UserSchema = new Schema(UserDefinition, {
-  toJSON: { getters: true, virtuals: true },
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  toJSON: {
+    getters: true,
+    virtuals: true
+  }
 });
 
-UserSchema.pre('save', function(next: HookNextFunction) {
-  const user: any = this;
+UserSchema.pre('save', function hook (next: HookNextFunction) {
+  if (!this.isModified('user_password')) {
+    // eslint-disable-next-line callback-return
+    next();
+  }
 
-  if (!user.isModified('password')) next();
-
-  hash(user.password, SALT_ROUNDS)
-    .then((hashedPassword: string) => {
-      user.password = hashedPassword;
+  hash(this.schema.obj.user_password, salt_rounds).
+    then((hashed_password: string) => {
+      this.schema.obj.user_password = hashed_password;
       next();
-    })
-    .catch((error: any) => next(error));
+    }).
+    catch((error: Error) => next(error));
 });

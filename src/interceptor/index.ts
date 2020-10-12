@@ -1,3 +1,1 @@
-import { RequestLogInterceptor } from './request-log/request-log.interceptor';
-
-export { RequestLogInterceptor };
+export * from './request.interceptor';

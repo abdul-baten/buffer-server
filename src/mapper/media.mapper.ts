@@ -1,8 +1,8 @@
 import * as jsonTransformer from 'jsonata';
-import { I_MEDIA } from '@interfaces';
+import type { IMedia } from '@interfaces';
 
 export class MediaMapper {
-  static addMediaResponseMapper(mediaInfo: I_MEDIA): I_MEDIA {
+  static addMediaResponseMapper (media_info: IMedia): IMedia {
     const response = `{
       "id": $._id,
       "mediaMimeType": $.mediaMimeType,
@@ -13,6 +13,6 @@ export class MediaMapper {
       "userID": $.userID
     }`;
 
-    return jsonTransformer(response).evaluate(mediaInfo);
+    return jsonTransformer(response).evaluate(media_info);
   }
 }

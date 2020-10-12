@@ -1,12 +1,7 @@
-export interface I_ERROR {
-  errorCode: string;
-  errorMessage: string;
-  statusCode: number;
-}
 
-export interface I_ERR {
-  errorCode: string;
-  errorDetails?: any;
-  httpCode: number;
+export interface IError {
+  error_code: number;
+  error_details: Error;
+  http_code: number;
   message: string;
 }

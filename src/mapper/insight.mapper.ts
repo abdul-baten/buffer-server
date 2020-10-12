@@ -1,8 +1,8 @@
 import * as jsonTransformer from 'jsonata';
-import { I_INS_FB_POST_ITEM } from '@interfaces';
+import type { IFbPost } from '@interfaces';
 
 export class InsightMapper {
-  static fbPostResponseMapper(pageInfo: any): I_INS_FB_POST_ITEM {
+  static fbPostResponseMapper (page_info: any): IFbPost {
     const response = `{
         "totalLikes": $.likes.summary.total_count,
         "totalComments": $.comments.summary.total_count,
@@ -28,10 +28,10 @@ export class InsightMapper {
         ]
     }`;
 
-    return jsonTransformer(response).evaluate(pageInfo);
+    return jsonTransformer(response).evaluate(page_info);
   }
 
-  static fbPostDataResponseMapper(pageInfo: any): Record<string, string | number> {
+  static fbPostDataResponseMapper (page_info: any): Record<string, string | number> {
     const response = `{
         "totalLikes": [$.likes.summary.total_count],
         "totalComments": [$.comments.summary.total_count],
@@ -45,6 +45,6 @@ export class InsightMapper {
         "postClicks": [$.insights.data[6].values.value]
     }`;
 
-    return jsonTransformer(response).evaluate(pageInfo);
+    return jsonTransformer(response).evaluate(page_info);
   }
 }

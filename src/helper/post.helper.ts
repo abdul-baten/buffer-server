@@ -1,30 +1,31 @@
-import { E_POST_STATUS } from '@enums';
-import { from, Observable } from 'rxjs';
-import { I_POST } from '@interfaces';
-import { Model } from 'mongoose';
+import { Injectable } from '@nestjs/common';
+import { to } from 'await-to-js';
+import type { IPost } from '@interfaces';
+import type { Model } from 'mongoose';
+import type { PostDto } from '@dtos';
+@Injectable()
+export class PostHelperService {
+  public async getPostsByUserID (model: Model<IPost>, user_id: string): Promise<IPost[]> {
+    const [error, posts] = await to(model.
+      find({ user_id }).
+      select('-__v').
+      lean(true).
+      exec());
 
-export class PostHelper {
-  static getPostsByUserID(postModel: Model<I_POST>, userID: string): Observable<I_POST[]> {
-    const posts = postModel
-      .find({ userID })
-      .lean()
-      .exec();
+    if (error) {
+      throw new Error();
+    }
 
-    return from(posts);
+    return posts as IPost[];
   }
 
-  static getPostsByStatusAndDate(
-    postModel: Model<I_POST>,
-    postStatus: E_POST_STATUS,
-    postScheduleDateTime: string,
-    limit: number,
-  ): Observable<I_POST[]> {
-    const posts = postModel
-      .find({ postStatus, postScheduleDateTime })
-      .limit(limit)
-      .lean()
-      .exec();
+  public async addPost (model: Model<IPost>, post_to_add: PostDto): Promise<IPost> {
+    const [error, added_post] = await to(new model(post_to_add).save());
 
-    return from(posts);
+    if (error) {
+      throw new Error();
+    }
+
+    return added_post as IPost;
   }
 }

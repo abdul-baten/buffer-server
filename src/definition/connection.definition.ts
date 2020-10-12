@@ -1,57 +1,57 @@
-import { E_CONNECTION_STATUS, E_CONNECTION_TYPE } from '@enums';
+import { EConnectionStatus, EConnectionType } from '@enums';
 import { SchemaDefinition, Types } from 'mongoose';
 
 export const ConnectionDefinition: SchemaDefinition = {
-  connectionType: {
-    enum: [
-      E_CONNECTION_TYPE.FACEBOOK_PAGE,
-      E_CONNECTION_TYPE.FACEBOOK_GROUP,
-      E_CONNECTION_TYPE.INSTAGRAM_BUSINESS,
-      E_CONNECTION_TYPE.INSTAGRAM_PERSONAL,
-      E_CONNECTION_TYPE.LINKEDIN_PAGE,
-      E_CONNECTION_TYPE.LINKEDIN_PROFILE,
-      E_CONNECTION_TYPE.PINTEREST,
-      E_CONNECTION_TYPE.TWITTER,
-    ],
-    trim: true,
-    type: String,
-    required: [true, 'Connection Type is required!'],
+  connection_added: {
+    default: Date.now(),
+    type: Date
   },
-  connectionID: {
-    type: String,
-    required: [true, 'Connection ID is required!'],
-  },
-  connectionName: {
-    type: String,
-    required: [true, 'Connection Name is required!'],
-  },
-  connectionCategory: {
-    type: String,
+  connection_category: {
     required: false,
+    type: String
   },
-  connectionStatus: {
-    enum: [E_CONNECTION_STATUS.DISABLED, E_CONNECTION_STATUS.ENABLED],
-    type: String,
-    required: [true, 'Connection Status is required!'],
+  connection_id: {
+    required: [true, 'Connection ID is required!'],
+    type: String
   },
-  connectionPicture: {
-    type: String,
+  connection_name: {
+    required: [true, 'Connection Name is required!'],
+    type: String
+  },
+  connection_picture: {
     required: [false, 'Connection Picture is required!'],
+    type: String
   },
-  connectionToken: {
-    type: String,
+  connection_status: {
+    enum: [EConnectionStatus.DISABLED, EConnectionStatus.ENABLED],
+    required: [true, 'Connection Status is required!'],
+    type: String
+  },
+  connection_token: {
     required: [true, 'Connection Token is required!'],
+    type: String
   },
-  connectionUserID: {
-    type: Types.ObjectId,
+  connection_type: {
+    enum: [
+      EConnectionType.FACEBOOK_PAGE,
+      EConnectionType.FACEBOOK_GROUP,
+      EConnectionType.INSTAGRAM_BUSINESS,
+      EConnectionType.INSTAGRAM_PERSONAL,
+      EConnectionType.LINKEDIN_PAGE,
+      EConnectionType.LINKEDIN_PROFILE,
+      EConnectionType.PINTEREST,
+      EConnectionType.TWITTER
+    ],
+    required: [true, 'Connection Type is required!'],
+    trim: true,
+    type: String
+  },
+  connection_updated: {
+    default: Date.now(),
+    type: Date
+  },
+  connection_user_id: {
     required: [true, 'Connection User ID is required!'],
-  },
-  connectionAdded: {
-    type: Date,
-    default: Date.now(),
-  },
-  connectionUpdated: {
-    type: Date,
-    default: Date.now(),
-  },
+    type: Types.ObjectId
+  }
 };

@@ -1,4 +1,4 @@
-enum E_ERROR_MESSAGE {
+export enum EErrorMessage {
   UNAUTHORISED_ERROR = '90',
   FORBIDDEN_ERROR = '100',
   SESSION_EXPIRED_CODE = '101',
@@ -17,37 +17,33 @@ enum E_ERROR_MESSAGE {
   FB_MEDIA_TOO_LARGE = '1006',
   FB_MEDIA_MISSING = '1007',
   FB_TOO_MANY_REQUESTS = '1008',
-  ADD_POST_ERROR = 10,
-
+  ADD_POST_ERROR = '10',
   TW_AUTHENTICATE_ERROR = '32',
   TW_INVALID_MEDIA_ERROR = '324',
-
   CONNECTION_DELETE_ERROR = '10000',
 }
 
-const E_ERROR_MESSAGE_MAP = new Map([
-  [E_ERROR_MESSAGE.ADD_POST_ERROR, 'Could not add post. Please try again.'],
-  [E_ERROR_MESSAGE.CONNECTION_DELETE_ERROR, 'Could not delete connection. Please try again'],
-  [E_ERROR_MESSAGE.COULD_NOT_ADD_MEDIA, 'Could not add media. Please try again.'],
-  [E_ERROR_MESSAGE.COULD_NOT_DELETE_MEDIA, 'Could not delete media. Please try again.'],
-  [E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS, 'This user has already an Buffer account.'],
-  [E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH, "Email address or password doesn't match."],
-  [E_ERROR_MESSAGE.FB_AUTH_CODE_EXPIRED_ERROR, 'Authorization code has expired.'],
-  [E_ERROR_MESSAGE.FB_DUPLICATE_MESSAGE_ERROR, "Whoops, it looks like you've posted that one recently. Please try posting others."],
-  [E_ERROR_MESSAGE.FB_EMPTY_POST_ERROR, 'The post is empty. Please enter a message to share.'],
-  [E_ERROR_MESSAGE.FB_MEDIA_MISSING, 'Media file is missing. Please try again.'],
-  [E_ERROR_MESSAGE.FB_MEDIA_TOO_LARGE, 'Media file is too large. Please try again.'],
-  [E_ERROR_MESSAGE.FB_OAUTH_ERROR, 'Could not log into Facebook. Please try again.'],
-  [E_ERROR_MESSAGE.FB_PAGE_ERROR, 'Could not get Facebook Pages. Please try again.'],
-  [E_ERROR_MESSAGE.FB_RIDERECT_URI_ERROR, 'Riderct URL is missing. Please try again.'],
-  [E_ERROR_MESSAGE.FB_TOO_MANY_REQUESTS, 'Too many requests. Please try again.'],
-  [E_ERROR_MESSAGE.FORBIDDEN_ERROR, 'Request not allowed. Please try again.'],
-  [E_ERROR_MESSAGE.INTERNAL_SERVER_ERROR, 'Something bad happened. Please try again.'],
-  [E_ERROR_MESSAGE.SESSION_EXPIRED_CODE, 'Session has expired. Please login again.'],
-  [E_ERROR_MESSAGE.UNAUTHORISED_ERROR, 'Authorization failed. Please login again.'],
-  [E_ERROR_MESSAGE.USER_WITH_THIS_EMAIL_NOT_FOUND, 'A user with this email is not found.'],
-  [E_ERROR_MESSAGE.TW_AUTHENTICATE_ERROR, 'Could not authenticate. Please try again.'],
-  [E_ERROR_MESSAGE.TW_INVALID_MEDIA_ERROR, 'Media file is missing. Please try again.'],
+export const ErrorMessageMap = new Map([
+  [EErrorMessage.ADD_POST_ERROR, 'Could not add post. Please try again.'],
+  [EErrorMessage.CONNECTION_DELETE_ERROR, 'Could not delete connection. Please try again'],
+  [EErrorMessage.COULD_NOT_ADD_MEDIA, 'Could not add media. Please try again.'],
+  [EErrorMessage.COULD_NOT_DELETE_MEDIA, 'Could not delete media. Please try again.'],
+  [EErrorMessage.DUPLICATE_EMAIL_ADDRESS, 'This user has already an Buffer account.'],
+  [EErrorMessage.EMAIL_PASSWORD_MISMATCH, "Email address or password doesn't match."],
+  [EErrorMessage.FB_AUTH_CODE_EXPIRED_ERROR, 'Authorization code has expired.'],
+  [EErrorMessage.FB_DUPLICATE_MESSAGE_ERROR, "Whoops, it looks like you've posted that one recently. Please try posting others."],
+  [EErrorMessage.FB_EMPTY_POST_ERROR, 'The post is empty. Please enter a message to share.'],
+  [EErrorMessage.FB_MEDIA_MISSING, 'Media file is missing. Please try again.'],
+  [EErrorMessage.FB_MEDIA_TOO_LARGE, 'Media file is too large. Please try again.'],
+  [EErrorMessage.FB_OAUTH_ERROR, 'Could not log into Facebook. Please try again.'],
+  [EErrorMessage.FB_PAGE_ERROR, 'Could not get Facebook Pages. Please try again.'],
+  [EErrorMessage.FB_RIDERECT_URI_ERROR, 'Riderct URL is missing. Please try again.'],
+  [EErrorMessage.FB_TOO_MANY_REQUESTS, 'Too many requests. Please try again.'],
+  [EErrorMessage.FORBIDDEN_ERROR, 'Request not allowed. Please try again.'],
+  [EErrorMessage.INTERNAL_SERVER_ERROR, 'Something bad happened. Please try again.'],
+  [EErrorMessage.SESSION_EXPIRED_CODE, 'Session has expired. Please login again.'],
+  [EErrorMessage.UNAUTHORISED_ERROR, 'Authorization failed. Please login again.'],
+  [EErrorMessage.USER_WITH_THIS_EMAIL_NOT_FOUND, 'A user with this email is not found.'],
+  [EErrorMessage.TW_AUTHENTICATE_ERROR, 'Could not authenticate. Please try again.'],
+  [EErrorMessage.TW_INVALID_MEDIA_ERROR, 'Media file is missing. Please try again.']
 ]);
-
-export { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP };

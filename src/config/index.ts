@@ -1,6 +1,5 @@
-import * as dotenv from 'dotenv';
-dotenv.config();
+import { config } from 'dotenv';
+config({ debug: true });
 
-export const configuration = require(`./env/${process.env.NODE_ENV ?? 'development'}`) || {};
-
-export const defaultConfig = () => ({ ...configuration.default });
+export const configuration = import(`./env/${process.env.NODE_ENV}`);
+export const default_config = async (): Promise<void> => ({ ...(await configuration).default });

@@ -1,50 +1,52 @@
-import { E_CONNECTION_TYPE } from '@enums';
-import { I_CONNECTION, I_LN_ACCESS_TOKEN_RESPONSE } from '@interfaces';
+import { EConnectionType } from '@enums';
 import { Injectable } from '@nestjs/common';
 import { LinkedInMapper } from '@mappers';
 import { LinkedInService } from '../service/linkedin.service';
-import { map } from 'rxjs/operators';
-import { Observable } from 'rxjs';
+import type { IConnection } from '@interfaces';
 
 @Injectable()
 export class LinkedInFacade {
-  constructor(private readonly linkedInService: LinkedInService) {}
+  constructor (private readonly linkedInService: LinkedInService) {}
 
-  authorize(connectionType: string): string {
-    return this.linkedInService.authorize(connectionType);
+  public async authorize (connection_type: string): Promise<string> {
+    const redirect_uri = await this.linkedInService.authorize(connection_type);
+
+    return redirect_uri;
   }
 
-  getAccessToken(connectionType: string, code: string): Observable<I_LN_ACCESS_TOKEN_RESPONSE> {
-    return this.linkedInService.getAccessToken(connectionType, code);
+  public async getAccessToken (connection_type: string, code: string): Promise<string> {
+    const access_token = await this.linkedInService.getAccessToken(connection_type, code);
+
+    return access_token;
   }
 
-  getUserInfo(accessToken: string): Observable<I_CONNECTION> {
-    const userInfoResponse$ = this.linkedInService.getUserInfo(accessToken);
-    return userInfoResponse$.pipe(
-      map((userResponse: any) => {
-        userResponse.accessToken = accessToken;
-        userResponse.connectionNetwork = E_CONNECTION_TYPE.LINKEDIN_PROFILE;
-        return LinkedInMapper.profileResponseMapper(userResponse);
-      }),
-    );
+  public async getUserInfo (connection_token: string): Promise<IConnection> {
+    const user_info = await this.linkedInService.getUserInfo(connection_token);
+
+    user_info.connection_token = connection_token;
+    user_info.connection_type = EConnectionType.LINKEDIN_PROFILE;
+
+    return LinkedInMapper.profileResponseMapper(user_info);
   }
 
-  getUserOrgs(accessToken: string): Observable<I_CONNECTION[]> {
-    const userInfoResponse$ = this.linkedInService.getUserOrgs(accessToken);
-    return userInfoResponse$.pipe(
-      map((connections: I_CONNECTION[]) => {
-        return connections.map((entry: I_CONNECTION) => {
-          const { connectionID, connectionName } = entry;
-          const connection = {
-            connectionCategory: 'Organization Page',
-            connectionID,
-            connectionName,
-            connectionNetwork: E_CONNECTION_TYPE.LINKEDIN_PROFILE,
-            connectionToken: accessToken,
-          };
-          return LinkedInMapper.orgsResponseMapper(connection);
-        });
-      }),
-    );
+  public async getUserOrgs (connection_token: string): Promise<IConnection[]> {
+    const organisations: IConnection[] = await this.linkedInService.getUserOrgs(connection_token);
+    const organisations_length: number = organisations.length;
+    const connections: IConnection[] = [];
+
+    for (let index = 0; index < organisations_length; index += 1) {
+      const { connection_id, connection_name } = organisations[index];
+      const connection = {
+        connection: 'Organization Page',
+        connection_id,
+        connection_name,
+        connection_token,
+        connection_type: EConnectionType.LINKEDIN_PROFILE
+      };
+
+      connections.push(LinkedInMapper.orgsResponseMapper(connection));
+    }
+
+    return connections;
   }
 }

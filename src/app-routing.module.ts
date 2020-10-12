@@ -12,16 +12,26 @@ import { TwitterModule } from '@routes/twitter/twitter.module';
 import { UserModule } from '@routes/user/user.module';
 
 const routes: Routes = [
-  { module: AuthModule, path: 'auth' },
-  { module: ConnectionModule, path: 'connection' },
-  { module: FacebookModule, path: 'facebook' },
-  { module: InsightModule, path: 'insight' },
-  { module: InstagramModule, path: 'instagram' },
-  { module: LinkedInModule, path: 'linkedin' },
-  { module: MediaModule, path: 'media' },
-  { module: PostModule, path: 'post' },
-  { module: TwitterModule, path: 'twitter' },
-  { module: UserModule, path: 'user' },
+  { module: AuthModule,
+    path: 'auth' },
+  { module: ConnectionModule,
+    path: 'connection' },
+  { module: FacebookModule,
+    path: 'facebook' },
+  { module: InsightModule,
+    path: 'insight' },
+  { module: InstagramModule,
+    path: 'instagram' },
+  { module: LinkedInModule,
+    path: 'linkedin' },
+  { module: MediaModule,
+    path: 'media' },
+  { module: PostModule,
+    path: 'post' },
+  { module: TwitterModule,
+    path: 'twitter' },
+  { module: UserModule,
+    path: 'user' }
 ];
 
 @Module({
@@ -36,7 +46,7 @@ const routes: Routes = [
     PostModule,
     RouterModule.forRoutes(routes),
     TwitterModule,
-    UserModule,
-  ],
+    UserModule
+  ]
 })
 export class AppRoutingModule {}

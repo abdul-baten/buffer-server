@@ -1,0 +1,7 @@
+{
+    "eslint.alwaysShowStatus": true,
+    "eslint.format.enable": true,
+    "eslint.lintTask.enable": true,
+    "eslint.codeActionsOnSave.mode": "all",
+    "eslint.nodePath": "/usr/local/bin/node"
+}

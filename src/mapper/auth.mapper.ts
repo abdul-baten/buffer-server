@@ -1,15 +1,15 @@
 import * as jsonTransformer from 'jsonata';
-import { I_USER } from '@interfaces';
-import { SanitizerUtil } from '@utils';
+import type { IUser } from '@interfaces';
 
 export class AuthMapper {
-  static signupValidationMapper(validationError: any): string {
-    const interestRate = `{"errors": **.properties.message}`;
-    return jsonTransformer(interestRate).evaluate(validationError);
+  static signupValidationMapper (error: Error): string {
+    const response = `{"errors": **.properties.message}`;
+
+    return jsonTransformer(response).evaluate(error);
   }
 
-  static userResponseMapper(userInfo: Partial<I_USER>): I_USER {
-    const userMap = `
+  static userResponseMapper (user_info: Partial<IUser>): IUser {
+    const response = `
     {
       "id": $._id,
       "subscription": $.subscription,
@@ -20,7 +20,7 @@ export class AuthMapper {
       "email": $.email
     }
     `;
-    const omittedUserInfo = SanitizerUtil.sanitizedResponse(userInfo);
-    return jsonTransformer(userMap).evaluate(omittedUserInfo);
+
+    return jsonTransformer(response).evaluate(user_info);
   }
 }

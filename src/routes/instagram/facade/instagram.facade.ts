@@ -1,21 +1,26 @@
-import { I_CONNECTION, I_FB_AUTH_RESPONSE } from '@interfaces';
 import { Injectable } from '@nestjs/common';
 import { InstagramService } from '../service/instagram.service';
-import { Observable } from 'rxjs';
+import type { IConnection, IFbAuthResponse } from '@interfaces';
 
 @Injectable()
 export class InstagramFacade {
-  constructor(private instagramService: InstagramService) {}
+  constructor (private readonly instagramService: InstagramService) {}
 
-  async authenticateInstagram(connectionType: string) {
-    return this.instagramService.authenticateInstagram(connectionType);
+  public async authenticateInstagram (connection_type: string): Promise<string> {
+    const auth = await this.instagramService.authenticateInstagram(connection_type);
+
+    return auth;
   }
 
-  authorizeInstagram(code: string, connectionType: string): Observable<I_FB_AUTH_RESPONSE> {
-    return this.instagramService.authorizeInstagram(code, connectionType);
+  public async authorizeInstagram (code: string, connection_type: string): Promise<IFbAuthResponse> {
+    const auth = await this.instagramService.authorizeInstagram(code, connection_type);
+
+    return auth;
   }
 
-  getInstagramAccounts(authResponse: I_FB_AUTH_RESPONSE): Observable<I_CONNECTION[]> {
-    return this.instagramService.getInstagramAccounts(authResponse);
+  public async businessAccounts (auth_response: IFbAuthResponse): Promise<IConnection[]> {
+    const auth = await this.instagramService.businessAccounts(auth_response);
+
+    return auth;
   }
 }

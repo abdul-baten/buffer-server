@@ -1,21 +1,21 @@
-import { Document } from 'mongoose';
-import { E_SUBSCRIPTION_PLAN } from '@enums';
+import type { Document } from 'mongoose';
+import type { ESubscriptionPlan } from '@enums';
 
-export interface I_SUBSCRIPTION_PLAN {
-  isTrial: boolean;
-  subscriptionPlan: E_SUBSCRIPTION_PLAN;
-  subscriptionPlanAdded: Date;
-  subscriptionPlanEnds: Date;
-  trialEnds: Date;
+export interface ISubscriptionPlan {
+  is_trial: boolean;
+  subscription_added: Date;
+  subscription_expires: Date;
+  subscription_plan: ESubscriptionPlan;
+  trial_ends: Date;
 }
 
-export interface I_USER extends Document {
+export interface IUser extends Document {
   id: string;
-  createdAt: Date;
-  email: string;
-  fullName: string;
-  password: string;
-  subscription: I_SUBSCRIPTION_PLAN;
-  updatedAt: Date;
-  userSuspended: boolean;
+  user_created_at: Date;
+  user_email: string;
+  user_full_name: string;
+  user_is_suspended: boolean;
+  user_password: string;
+  user_subscription_plan: ISubscriptionPlan;
+  user_updated_at: Date;
 }

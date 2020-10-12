@@ -1,31 +1,34 @@
-import * as httpContext from 'express-http-context';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpStatus
+} from '@nestjs/common';
 import { AuthMapper } from 'src/mapper';
-import { E_CONTEXT } from '@enums';
+import { EContext } from '@enums';
 import { Error } from 'mongoose';
-import { I_ERROR } from '@interfaces';
-import { Response } from 'express';
-import { Catch, ExceptionFilter, ArgumentsHost, HttpStatus } from '@nestjs/common';
+import { get, set } from 'express-http-context';
+import { parse as parseStack } from 'error-stack-parser';
+import type { FastifyReply } from 'fastify';
 
 @Catch(Error)
 export class ValidationExceptionFilter implements ExceptionFilter {
-  catch(exception: Error, host: ArgumentsHost) {
+  catch (exception: Error, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const statusCode = HttpStatus.BAD_REQUEST;
+    const response = ctx.getResponse<FastifyReply>();
+    const context = get(EContext.REQUEST_LOGGING);
 
-    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
-    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
+    set(EContext.REQUEST_LOGGING, {
       ...context,
-      isError: true,
-      errorDetails: exception,
+      error_message: exception.message,
+      error_stack: parseStack(exception),
+      is_error: true
     });
 
-    const name = ValidationExceptionFilter.name;
-    console.warn(name);
-
-    response.status(statusCode).json({
-      statusCode,
-      errorMessage: AuthMapper.signupValidationMapper(exception),
-    } as I_ERROR);
+    response.status(HttpStatus.BAD_REQUEST).send({
+      error_code: 404,
+      http_code: 404,
+      message: AuthMapper.signupValidationMapper(exception)
+    });
   }
 }

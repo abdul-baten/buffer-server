@@ -1,8 +1,6 @@
-import { AddConnectionDTO } from './connection-add.dto';
-import { FBInsightDTO } from './insight.dto';
-import { MediaDTO } from './media.dto';
-import { PostDTO } from './post.dto';
-import { UserEnterDTO } from './user-enter.dto';
-import { UserJoinDTO } from './user-join.dto';
-
-export { AddConnectionDTO, FBInsightDTO, MediaDTO, PostDTO, UserEnterDTO, UserJoinDTO };
+export * from './connection-add.dto';
+export * from './insight.dto';
+export * from './media.dto';
+export * from './post.dto';
+export * from './user-enter.dto';
+export * from './user-join.dto';

@@ -1,27 +1,36 @@
-import * as httpContext from 'express-http-context';
-import { E_CONTEXT, E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
-import { I_ERROR } from '@interfaces';
-import { Response } from 'express';
-import { ArgumentsHost, Catch, ExceptionFilter, ForbiddenException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  ForbiddenException,
+  HttpStatus
+} from '@nestjs/common';
+import { EContext } from '@enums';
+import { get, set } from 'express-http-context';
+import { parse as parseStack } from 'error-stack-parser';
+import type { FastifyReply } from 'fastify';
+import type { IError } from '@interfaces';
 
 @Catch(ForbiddenException)
 export class ForbiddenExceptionFilter implements ExceptionFilter {
-  catch(exception: ForbiddenException, host: ArgumentsHost) {
+  catch (exception: ForbiddenException, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const statusCode = exception.getStatus();
+    const response = ctx.getResponse<FastifyReply>();
+    const { error_details, error_code, http_code, message } = exception.getResponse() as IError;
+    const { message: error_message } = error_details;
+    const context = get(EContext.REQUEST_LOGGING);
 
-    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
-    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
+    set(EContext.REQUEST_LOGGING, {
       ...context,
-      isError: true,
-      errorDetails: exception.getResponse(),
+      error_message,
+      error_stack: parseStack(error_details),
+      is_error: true
     });
 
-    response.status(statusCode).json({
-      errorCode: E_ERROR_MESSAGE.SESSION_EXPIRED_CODE,
-      statusCode,
-      errorMessage: E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.SESSION_EXPIRED_CODE),
-    } as I_ERROR);
+    response.status(HttpStatus.FORBIDDEN).send({
+      error_code,
+      http_code,
+      message
+    });
   }
 }

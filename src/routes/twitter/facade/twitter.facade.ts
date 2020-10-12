@@ -1,34 +1,27 @@
-import { E_CONNECTION_TYPE } from '@enums';
-import { from } from 'rxjs';
-import { I_CONNECTION } from '@interfaces';
+import { EConnectionType } from '@enums';
 import { Injectable } from '@nestjs/common';
-import { map } from 'rxjs/operators';
 import { TwitterMapper } from '@mappers';
 import { TwitterService } from '../service/twitter.service';
+import type { IConnection } from '@interfaces';
 
 @Injectable()
 export class TwitterFacade {
-  constructor(private readonly twitterService: TwitterService) {}
+  constructor (private readonly twitterService: TwitterService) {}
 
-  async authorize(): Promise<string> {
-    return this.twitterService.authorize();
+  public async authorize (): Promise<string> {
+    const authorize = await this.twitterService.authorize();
+
+    return authorize;
   }
 
-  async getProfile(oauth_token: string, oauth_verifier: string): Promise<I_CONNECTION> {
-    return (from(this.twitterService.getProfile(oauth_token, oauth_verifier))
-      .pipe(
-        map((resp: any) => {
-          const connectionToken = [resp.token, resp.oauth_token_secret];
-          const profileInfo = JSON.parse(resp.response);
-          profileInfo.oauth_token = connectionToken.toString();
-          profileInfo.connectionNetwork = E_CONNECTION_TYPE.TWITTER;
+  public async getProfile (oauth_token: string, oauth_verifier: string): Promise<IConnection> {
+    const profile_info = await this.twitterService.getProfile(oauth_token, oauth_verifier);
+    const connection_token = [profile_info.token, profile_info.oauth_token_secret];
+    const profile = await JSON.parse(profile_info.response);
 
-          console.warn(profileInfo);
-          
-          return profileInfo;
-        }),
-        map(response => TwitterMapper.twtProfileResponseMapper(response)),
-      )
-      .toPromise() as unknown) as I_CONNECTION;
+    profile.oauth_token = connection_token.toString();
+    profile.connection_network = EConnectionType.TWITTER;
+
+    return TwitterMapper.twtProfileResponseMapper(profile);
   }
 }

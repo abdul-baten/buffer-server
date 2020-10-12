@@ -1,12 +1,12 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { TwitterController } from './twitter.controller';
 
-describe('TwitterController', () => {
+describe('Twitter Controller', () => {
   let controller: TwitterController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [TwitterController],
+      controllers: [TwitterController]
     }).compile();
 
     controller = module.get<TwitterController>(TwitterController);

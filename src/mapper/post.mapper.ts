@@ -1,11 +1,15 @@
 import * as jsonTransformer from 'jsonata';
-import { I_POST } from '@interfaces';
+import type { IPost } from '@interfaces';
 
 export class PostMapper {
-  static postResponseMapper(postInfo: I_POST): I_POST {
+  static postResponseMapper (post_info: IPost): IPost {
     const response = `
     {
+      "allDay": false,
+      "editable": true,
+      "hasEnd": false,
       "id": $._id,
+      "overlap": true,
       "postCaption": $.postCaption,
       "postConnection": $.postConnection,
       "postDate": $.postDate,
@@ -13,15 +17,11 @@ export class PostMapper {
       "postScheduleDateTime": $.postScheduleDateTime,
       "postStatus": $.postStatus,
       "postType": $.postType,
-      "userID": $.userID,
       "start": $.postScheduleDateTime,
-      "allDay": false,
-      "editable": true,
-      "overlap": true,
-      "hasEnd": false
+      "userID": $.userID,
     }
     `;
 
-    return jsonTransformer(response).evaluate(postInfo);
+    return jsonTransformer(response).evaluate(post_info);
   }
 }

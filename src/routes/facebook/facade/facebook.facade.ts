@@ -1,87 +1,80 @@
-import { catchError, defaultIfEmpty, map, pluck } from 'rxjs/operators';
+import Axios, { AxiosRequestConfig } from 'axios';
 import { ConfigService } from '@nestjs/config';
 import { ConnectionMapper } from '@mappers';
-import { ErrorHelper } from '@helpers';
-import { from, Observable } from 'rxjs';
-import { I_CONNECTION, I_FB_AUTH_ERROR, I_FB_AUTH_RESPONSE, I_FB_PAGE } from '@interfaces';
 import { Injectable } from '@nestjs/common';
-import { LoggerUtil } from '@utils';
-import { promisifyAll } from 'bluebird';
-
-const Graph = require('fbgraph');
-Graph.setVersion('6.0');
-
-promisifyAll(Graph);
+import type { IFbAuthResponse, IConnection, IFbPageResponse } from '@interfaces';
 
 @Injectable()
 export class FacebookFacade {
-  constructor(private configService: ConfigService) {}
+  constructor (private configService: ConfigService) {}
 
-  private getFacebookSettings(): {
+  private getFacebookSettings (): {
     client_id: string;
     redirect_uri: string;
-  } {
+    } {
     return {
       client_id: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.CLIENT_ID') as string,
-      redirect_uri: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.REDIRECT_URL') as string,
+      redirect_uri: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.REDIRECT_URL') as string
     };
   }
 
-  async authenticateFacebook() {
-    const config = this.getFacebookSettings();
-    try {
-      return Graph.getOauthUrl({
-        ...config,
-        scope: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.SCOPE') as string,
-      });
-    } catch (error) {
-      LoggerUtil.logInfo(error);
-    }
+  async authenticateFacebook (): Promise<string> {
+    const uri = '';
+    const config: AxiosRequestConfig = {
+      params: {
+        ...this.getFacebookSettings(),
+        scope: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.SCOPE') as string
+      }
+    };
+
+    const response = (await Axios.get(uri, config)).data;
+
+    return response;
   }
 
-  authorizeFacebook(code: string): Observable<I_FB_AUTH_RESPONSE> {
-    const config = this.getFacebookSettings();
-    return from(
-      Graph.authorizeAsync({
-        ...config,
+  async authorizeFacebook (code: string): Promise<IFbAuthResponse> {
+    const uri = '';
+    const config: AxiosRequestConfig = {
+      params: {
+        ...this.getFacebookSettings(),
         client_secret: this.configService.get<string>('SOCIAL_PLATFORM.FACEBOOK.CLIENT_SECRET') as string,
-        code,
-      }),
-    ).pipe(
-      map((authResponse: I_FB_AUTH_RESPONSE) => authResponse),
-      catchError((error: I_FB_AUTH_ERROR) => ErrorHelper.catchFBError(error)),
-    );
-  }
-
-  private getFacebookPages(accessToken: string): Observable<any> {
-    const params = {
-      access_token: accessToken,
-      fields: 'picture{url},name,category,id,access_token',
+        code
+      }
     };
 
-    return from(Graph.getAsync('me/accounts', params)).pipe(
-      map(response => response),
-      catchError((error: I_FB_AUTH_ERROR) => ErrorHelper.catchFBError(error)),
-    );
+    const response = (await Axios.get(uri, config)).data;
+
+    return response;
   }
 
-  private mapFBPages(response: I_FB_PAGE[]): I_CONNECTION[] {
-    const pagesList: I_CONNECTION[] = [];
-    response.forEach((page: I_FB_PAGE) => {
-      pagesList.push(ConnectionMapper.fbPageResponseMapper(page));
-    });
-    return pagesList;
+  private async getFacebookPages (connection_token: string): Promise<IFbPageResponse[]> {
+    const uri = 'https://graph.facebook.com/me/accounts';
+    const config: AxiosRequestConfig = {
+      params: {
+        access_token: connection_token,
+        fields: 'picture{url},name,category,id,access_token'
+      }
+    };
+    const response = (await Axios.get(uri, config)).data;
+
+    return response;
   }
 
-  getFBPages(authResponse: I_FB_AUTH_RESPONSE): Observable<I_CONNECTION[]> {
-    const pageListObservabe$ = this.getFacebookPages(authResponse.access_token);
+  private mapFBPages (response: IFbPageResponse[]): IConnection[] {
+    const pages_list: IConnection[] = [];
+    const response_length = response.length;
 
-    return pageListObservabe$.pipe(
-      map(response => response),
-      pluck('data'),
-      map((response: I_FB_PAGE[]) => this.mapFBPages(response)),
-      defaultIfEmpty([]),
-      catchError((error: I_FB_AUTH_ERROR) => ErrorHelper.catchFBError(error)),
-    );
+    for (let index = 0; index < response_length; index += 1) {
+      pages_list.push(ConnectionMapper.fbPageResponseMapper(response[index] as unknown as IConnection));
+    }
+
+    return pages_list;
+  }
+
+  public async getFBPages (auth_response: IFbAuthResponse): Promise<IConnection[]> {
+    const pages_list = await this.getFacebookPages(auth_response.access_token);
+    const response = this.mapFBPages(pages_list);
+
+    return response;
   }
 }

@@ -1,37 +1,37 @@
-import { E_CONNECTION_STATUS, E_CONNECTION_TYPE } from '@enums';
+import { EConnectionStatus, EConnectionType } from '@enums';
 import { IsDefined, IsEnum, IsOptional, IsString } from 'class-validator';
 
-export class AddConnectionDTO {
+export class AddConnectionDto {
   @IsDefined()
   @IsString()
-  readonly connectionID: string;
+  readonly connection_id!: string;
 
   @IsDefined()
   @IsString()
   @IsOptional()
-  readonly connectionCategory: string;
+  readonly connection_category!: string;
 
   @IsDefined()
   @IsString()
-  readonly connectionName: string;
+  readonly connection_name!: string;
 
   @IsDefined()
-  @IsEnum(E_CONNECTION_TYPE)
-  readonly connectionType: E_CONNECTION_TYPE;
+  @IsEnum(EConnectionType)
+  readonly connection_type!: EConnectionType;
 
   @IsDefined()
-  @IsEnum(E_CONNECTION_STATUS)
-  readonly connectionStatus: E_CONNECTION_STATUS;
-
-  @IsDefined()
-  @IsString()
-  readonly connectionPicture: string;
+  @IsEnum(EConnectionStatus)
+  readonly connection_status!: EConnectionStatus;
 
   @IsDefined()
   @IsString()
-  readonly connectionToken: string;
+  readonly connection_picture!: string;
 
   @IsDefined()
   @IsString()
-  readonly connectionUserID: string;
+  readonly connection_token!: string;
+
+  @IsDefined()
+  @IsString()
+  readonly connection_user_id!: string;
 }

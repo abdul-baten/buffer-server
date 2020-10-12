@@ -1,62 +1,91 @@
-import { compareSync } from 'bcrypt';
-import { ConfigService } from '@nestjs/config';
-import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
-import { I_USER } from '@interfaces';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import to from 'await-to-js';
+import { AuthErrorCodes, EUserErrorMessage, UserErrorCodes } from '@errors';
+import { compare } from 'bcrypt';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { TokenUtil } from '@utils';
-import { UserEnterDTO, UserJoinDTO } from '@dtos';
+import { TokenService } from '@utils';
+import { UserHelperService } from '@helpers';
+import type { IUser } from '@interfaces';
+import type { UserEnterDto, UserJoinDto } from '@dtos';
 
 @Injectable()
 export class AuthService {
-  constructor(@InjectModel('User') private readonly userModel: Model<I_USER>, private readonly configService: ConfigService) {}
+  constructor (@InjectModel('User') private readonly userModel: Model<IUser>, private readonly tokenService: TokenService, private readonly userHelperService: UserHelperService) {}
 
-  async userEnter(userEnterDTO: UserEnterDTO): Promise<any> {
-    const { email, password } = userEnterDTO;
+  private async signToken (id: string, user_email: string): Promise<string> {
+    const [error, auth_token] = await to(this.tokenService.jwtSign({
+      id,
+      user_email
+    }));
 
-    try {
-      const user: I_USER = (await this.userModel.findOne({ email }).exec()) as I_USER;
-      if (user) {
-        const passwordMatches = compareSync(password, user.password);
+    if (error) {
+      throw new InternalServerErrorException({
+        ...AuthErrorCodes.NOT_AUTHENTICATED,
+        error_details: error
+      });
+    }
 
-        if (passwordMatches) {
-          const token = await TokenUtil.jwtSign({ email, _id: user._id }, this.configService);
-          return { user, token };
-        } else {
-          throw new InternalServerErrorException(
-            E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH),
-            E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH,
-          );
-        }
-      } else {
-        throw new InternalServerErrorException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH),
-          E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH,
-        );
-      }
-    } catch (err) {
-      throw new InternalServerErrorException(
-        E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH),
-        E_ERROR_MESSAGE.EMAIL_PASSWORD_MISMATCH,
-      );
+    return auth_token as string;
+  }
+
+  private async comparePassword (user_password: string, hashed_password: string): Promise<void> {
+    const [error, password_matched] = await to(compare(user_password, hashed_password));
+
+    if (error) {
+      throw new InternalServerErrorException({
+        ...AuthErrorCodes.NOT_AUTHENTICATED,
+        error_details: error
+      });
+    }
+
+    if (!password_matched) {
+      throw new NotFoundException({
+        ...UserErrorCodes.PASSWORD_MISMATCH,
+        error_details: new Error(EUserErrorMessage.PASSWORD_MISMATCH)
+      });
     }
   }
 
-  async userJoin(userJoinDTO: UserJoinDTO): Promise<{ user: I_USER; authToken: string }> {
-    try {
-      const user = new this.userModel(userJoinDTO);
-      const savedUser = await user.save();
-      const { email, _id } = savedUser;
-      const authToken = await TokenUtil.jwtSign({ email, _id }, this.configService);
+  public async userEnter (user_enter_dto: UserEnterDto): Promise<{ auth_token: string, user_info: IUser }> {
+    const { user_email, user_password } = user_enter_dto;
+    const [error, user_info] = await to(this.userHelperService.findUserByEmail(this.userModel, user_email));
 
-      delete user.password;
-      return { user, authToken };
-    } catch (err) {
-      throw new InternalServerErrorException(
-        E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS),
-        E_ERROR_MESSAGE.DUPLICATE_EMAIL_ADDRESS,
-      );
+    if (error) {
+      throw new NotFoundException({
+        ...UserErrorCodes.COULD_NOT_FOUND,
+        error_details: error
+      });
     }
+
+    const { user_password: password, id } = user_info as IUser;
+
+    await this.comparePassword(user_password, password);
+
+    const auth_token = await this.signToken(id, user_email);
+
+    return {
+      auth_token,
+      user_info: user_info as IUser
+    };
+  }
+
+  public async userJoin (user_join_dto: UserJoinDto): Promise<{ auth_token: string, user_info: IUser }> {
+    const user_info = new this.userModel(user_join_dto),
+      saved_user = await user_info.save(),
+      { id, user_email } = saved_user,
+      auth_token = await this.tokenService.jwtSign({
+        id,
+        user_email
+      });
+
+    /*
+     * TODO:
+     * delete user.password;
+     */
+    return {
+      auth_token,
+      user_info
+    };
   }
 }

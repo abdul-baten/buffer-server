@@ -1,37 +1,35 @@
-import { I_INS_CHART } from './insight.interface';
+import type { IInsightChart } from './insight.interface';
 
-// tslint:disable-next-line
-export interface I_INS_IG_MEDIA {
+export interface IInstaMediaInsight {
   caption: string;
   comments_count: number;
-  createdTime: string;
-  impressions: I_INS_CHART;
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  created_time: string;
+  impressions: IInsightChart;
   like_count: number;
   media_type: string;
   media_url: string;
   permalink: string;
-  reach: I_INS_CHART;
-  saved: I_INS_CHART;
+  reach: IInsightChart;
+  saved: IInsightChart;
 }
 
-// tslint:disable-next-line
-export interface I_INS_IG_OVERVIEW {
-  follower_count: I_INS_CHART;
-  impressions: I_INS_CHART;
-  phone_call_clicks: I_INS_CHART;
-  profile_views: I_INS_CHART;
-  reach: I_INS_CHART;
-  text_message_clicks: I_INS_CHART;
-  website_clicks: I_INS_CHART;
+export interface IInstaOverviewInsight {
+  follower_count: IInsightChart;
+  impressions: IInsightChart;
+  phone_call_clicks: IInsightChart;
+  profile_views: IInsightChart;
+  reach: IInsightChart;
+  text_message_clicks: IInsightChart;
+  website_clicks: IInsightChart;
 }
 
-// tslint:disable-next-line
-export interface I_INS_IG extends I_INS_IG_OVERVIEW {
+export interface IInstaInsight extends IInstaOverviewInsight {
   categories?: string[];
   followers_count: number;
   follows_count: number;
   id: string;
-  mediaData: I_INS_IG_MEDIA[];
   media_count: number;
-  medias: I_INS_CHART;
+  media_data: IInstaMediaInsight[];
+  medias: IInsightChart;
 }

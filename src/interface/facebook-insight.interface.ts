@@ -1,108 +1,97 @@
-import { I_INS_CHART } from './insight.interface';
+import type { IInsightBase, IInsightChart } from './insight.interface';
 
-// tslint:disable-next-line
-export interface I_FB_INS_PAYLOAD {
-  connectionId: string;
+export interface IFbInsightPayload {
+  connection_id: string;
   since: string;
   until: string;
 }
 
-// tslint:disable-next-line
-export interface I_INS_FB_POST_ITEM {
+export interface IFbOverviewInsight extends IInsightBase {
+  page_actions_post_reactions_anger_total: IInsightChart;
+  page_actions_post_reactions_haha_total: IInsightChart;
+  page_actions_post_reactions_like_total: IInsightChart;
+  page_actions_post_reactions_love_total: IInsightChart;
+  page_actions_post_reactions_sorry_total: IInsightChart;
+  page_actions_post_reactions_total: IInsightChart;
+  page_actions_post_reactions_wow_total: IInsightChart;
+  page_engaged_users: IInsightChart;
+  page_fan_adds: IInsightChart;
+  page_fan_removes: IInsightChart;
+  page_impressions: IInsightChart;
+  page_impressions_unique: IInsightChart;
+  page_views_total: IInsightChart;
+}
+
+export interface IFbPost {
   attachment: string;
-  createdTime: number;
-  hashTags: string[];
+  created_time: number;
+  hash_tags: string[];
   id: string;
   status: string;
-  totalComments: number;
-  totalLikes: number;
-  totalReactions: number;
-  totalShares: number;
+  total_comments: number;
+  total_likes: number;
+  total_reactions: number;
+  total_shares: number;
   url: string;
   insights: [
     {
-      engagedFan: number;
-      engagedUsers: number;
-      negativeFeedback: number;
-      postClicks: number;
-      postImpressions: number;
-      postImpressionsOrganic: number;
-      postImpressionsPaid: number;
-      postReach: number;
+      engaged_fans: number;
+      engaged_users: number;
+      negative_feedbacks: number;
+      post_clicks: number;
+      post_impressions: number;
+      post_impressions_organic: number;
+      post_impressions_paid: number;
+      post_reach: number;
     },
   ];
 }
 
-// tslint:disable-next-line
-export interface I_INS_POSTS {
-  tableData: I_INS_FB_POST_ITEM[];
+export interface IFbPostInsight extends IInsightBase {
+  engaged_fans: number[];
+  engaged_users: number[];
+  hash_tags: number;
+  post_clicks: number[];
+  post_impressions: number[];
+  post_reach: number[];
+  posts: IInsightChart;
+  posts_table: IFbPost[];
+  total_comments: number[];
+  total_likes: number[];
+  total_reactions: number[];
+  total_shares: number[];
 }
 
-// tslint:disable-next-line
-export interface I_INS_POST extends I_INS_POSTS {
-  engagedFan: number[];
-  engagedUsers: number[];
-  hashTags: number;
-  postClicks: number[];
-  postImpressions: number[];
-  postReach: number[];
-  posts: I_INS_CHART;
-  totalComments: number[];
-  totalLikes: number[];
-  totalReactions: number[];
-  totalShares: number[];
+export interface IFbVideoInsight extends IInsightBase {
+  page_video_complete_views_30s: IInsightChart;
+  page_video_complete_views_30s_autoplayed: IInsightChart;
+  page_video_complete_views_30s_click_to_play: IInsightChart;
+  page_video_complete_views_30s_organic: IInsightChart;
+  page_video_complete_views_30s_paid: IInsightChart;
+  page_video_complete_views_30s_repeat_views: IInsightChart;
+  page_video_complete_views_30s_unique: IInsightChart;
+  page_video_repeat_views: IInsightChart;
+  page_video_views: IInsightChart;
+  page_video_views_10s: IInsightChart;
+  page_video_views_10s_autoplayed: IInsightChart;
+  page_video_views_10s_click_to_play: IInsightChart;
+  page_video_views_10s_organic: IInsightChart;
+  page_video_views_10s_paid: IInsightChart;
+  page_video_views_10s_repeat: IInsightChart;
+  page_video_views_10s_unique: IInsightChart;
+  page_video_views_autoplayed: IInsightChart;
+  page_video_views_click_to_play: IInsightChart;
+  page_video_views_organic: IInsightChart;
+  page_video_views_paid: IInsightChart;
+  page_video_views_unique: IInsightChart;
 }
 
-// tslint:disable-next-line
-export interface I_INS_PAGE {
-  page_call_phone_clicks_logged_in_unique: I_INS_CHART;
-  page_engaged_users: I_INS_CHART;
-  page_fan_adds: I_INS_CHART;
-  page_fan_removes: I_INS_CHART;
-  page_get_directions_clicks_logged_in_unique: I_INS_CHART;
-  page_impressions: I_INS_CHART;
-  page_impressions_unique: I_INS_CHART;
-  page_tab_views_login_top: I_INS_CHART;
-  page_total_actions: I_INS_CHART;
-  page_video_complete_views_30s: I_INS_CHART;
-  page_video_complete_views_30s_autoplayed: I_INS_CHART;
-  page_video_complete_views_30s_click_to_play: I_INS_CHART;
-  page_video_complete_views_30s_organic: I_INS_CHART;
-  page_video_complete_views_30s_paid: I_INS_CHART;
-  page_video_complete_views_30s_repeat_views: I_INS_CHART;
-  page_video_complete_views_30s_unique: I_INS_CHART;
-  page_video_repeat_views: I_INS_CHART;
-  page_video_views: I_INS_CHART;
-  page_video_views_10s: I_INS_CHART;
-  page_video_views_10s_autoplayed: I_INS_CHART;
-  page_video_views_10s_click_to_play: I_INS_CHART;
-  page_video_views_10s_organic: I_INS_CHART;
-  page_video_views_10s_paid: I_INS_CHART;
-  page_video_views_10s_repeat: I_INS_CHART;
-  page_video_views_10s_unique: I_INS_CHART;
-  page_video_views_autoplayed: I_INS_CHART;
-  page_video_views_click_to_play: I_INS_CHART;
-  page_video_views_organic: I_INS_CHART;
-  page_video_views_paid: I_INS_CHART;
-  page_video_views_unique: I_INS_CHART;
-  page_website_clicks_logged_in_unique: I_INS_CHART;
-
-  page_views_total: I_INS_CHART;
-  page_views_logout: I_INS_CHART;
-  page_views_logged_in_total: I_INS_CHART;
-
-  page_actions_post_reactions_like_total: I_INS_CHART;
-  page_actions_post_reactions_love_total: I_INS_CHART;
-  page_actions_post_reactions_wow_total: I_INS_CHART;
-  page_actions_post_reactions_haha_total: I_INS_CHART;
-  page_actions_post_reactions_sorry_total: I_INS_CHART;
-  page_actions_post_reactions_anger_total: I_INS_CHART;
-  page_actions_post_reactions_total: I_INS_CHART;
-}
-
-// tslint:disable-next-line
-export interface I_INS_FB extends I_INS_PAGE {
-  categories?: string[];
-  id: string;
-  postData: I_INS_POST;
+export interface IFbPerformanceInsight extends IInsightBase {
+  page_call_phone_clicks_logged_in_unique: IInsightChart;
+  page_get_directions_clicks_logged_in_unique: IInsightChart;
+  page_tab_views_login_top: IInsightChart;
+  page_total_actions: IInsightChart;
+  page_views_logged_in_total: IInsightChart;
+  page_views_logout: IInsightChart;
+  page_website_clicks_logged_in_unique: IInsightChart;
 }

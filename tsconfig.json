@@ -24,6 +24,9 @@
       "@enums": [
         "src/enum/index"
       ],
+      "@errors": [
+        "src/error/index"
+      ],
       "@exceptions": [
         "src/exception/index"
       ],
@@ -58,13 +61,38 @@
         "src/util/index"
       ],
     },
+    "allowJs": true,
+    "allowUnreachableCode": false,
+    "allowUnusedLabels": false,
+    "alwaysStrict": true,
+    "checkJs": true,
+    "extendedDiagnostics": true,
+    "forceConsistentCasingInFileNames": true,
+    "importHelpers": true,
+    "importsNotUsedAsValues": "error",
+    "inlineSourceMap": false,
+    "keyofStringsOnly": true,
+    "moduleResolution": "node",
+    "newLine": "lf",
+    "noEmitOnError": true,
+    "noErrorTruncation": true,
+    "noFallthroughCasesInSwitch": true,
+    "noImplicitThis": true,
+    "noImplicitUseStrict": false,
+    "noStrictGenericChecks": true,
+    "pretty": true,
     "removeComments": true,
+    "skipLibCheck": true,
     "sourceMap": false,
+    "strict": true,
+    "strictBindCallApply": true,
+    "strictFunctionTypes": true,
     "strictNullChecks": true,
-    "target": "es2017"
+    "strictPropertyInitialization": true,
+    "target": "es2017",
   },
   "exclude": [
     "node_modules",
     "dist"
-  ],
+  ]
 }

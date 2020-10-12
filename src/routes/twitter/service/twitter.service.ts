@@ -1,16 +1,27 @@
+import to from 'await-to-js';
 import { Injectable } from '@nestjs/common';
-import { TwitterHelper } from '@helpers';
+import { TwitterHelperService } from '@helpers';
 
 @Injectable()
 export class TwitterService {
-  constructor() {}
+  constructor (private readonly twitterHelperService: TwitterHelperService) {}
+  public async authorize (): Promise<string> {
+    const [error, redirect_uri] = await to(this.twitterHelperService.authorize());
 
-  async authorize(): Promise<string> {
-    const redirectUrl = await TwitterHelper.authorize();
-    return redirectUrl;
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return redirect_uri as string;
   }
 
-  async getProfile(oauth_token: string, oauth_verifier: string): Promise<any> {
-    return TwitterHelper.getProfile(oauth_token, oauth_verifier);
+  async getProfile (oauth_token: string, oauth_verifier: string): Promise<any> {
+    const [error, twitter_profile] = await to(this.twitterHelperService.getProfile(oauth_token, oauth_verifier));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return twitter_profile;
   }
 }

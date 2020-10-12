@@ -1,47 +1,52 @@
 import { AuthGuard } from '@guards';
-import { configuration } from '@config';
-import { Controller, Delete, HttpCode, HttpStatus, Post, Query, Req, UploadedFile, UseGuards, UseInterceptors } from '@nestjs/common';
-import { diskStorage } from 'multer';
-import { extname } from 'path';
-import { FileInterceptor } from '@nestjs/platform-express';
-import { I_MEDIA } from '@interfaces';
+import {
+  Controller,
+  Delete,
+  HttpStatus,
+  Post,
+  Query,
+  Req,
+  Response,
+  UseGuards
+} from '@nestjs/common';
 import { MediaFacade } from '../facade/media.facade';
-import { Observable } from 'rxjs';
-import { Request } from 'express';
-
-const UPLOAD_DIR = configuration.default.APP.UPLOAD_DIR;
-
-export const postMediaFileName = (_req: any, file: any, callback: any) => {
-  const name = file.originalname.split('.')[0].toLowerCase();
-  const fileExtName = extname(file.originalname);
-  const randomName = Date.now();
-  callback(null, `${name}-${randomName}${fileExtName}`);
-};
+import { parse } from 'cookie';
+import type { FastifyReply } from 'fastify';
 
 @Controller('')
 export class MediaController {
-  constructor(private readonly mediaFacade: MediaFacade) {}
+  constructor (private readonly mediaFacade: MediaFacade) {}
 
   @Post('add')
   @UseGuards(AuthGuard)
-  @UseInterceptors(
-    FileInterceptor('postMedia', {
-      storage: diskStorage({
-        destination: UPLOAD_DIR,
-        filename: postMediaFileName,
-      }),
-    }),
-  )
-  @HttpCode(HttpStatus.CREATED)
-  addMedia(@Req() request: Request, @UploadedFile() postMedia: any): Observable<I_MEDIA> {
-    const { authToken } = request.cookies;
-    return this.mediaFacade.addMedia(authToken, postMedia);
+  public async addMedia (@Req() request: any, @Response() response: FastifyReply): Promise<void> {
+    const response_time: number = response.getResponseTime();
+    const { auth_token } = parse(request.headers.cookie as string);
+    const { file, filename, mimetype } = await request.file();
+    const media_info = {
+      media_file: file,
+      media_mime_type: mimetype,
+      media_name: filename
+    };
+    const media = await this.mediaFacade.addMedia(auth_token, media_info);
+
+    response.
+      header('x-response-time', response_time).
+      status(HttpStatus.CREATED).
+      type('application/json').
+      send(media);
   }
 
   @Delete('delete')
   @UseGuards(AuthGuard)
-  @HttpCode(HttpStatus.OK)
-  deleteMedia(@Query('deletedID') deletedID: string): Observable<I_MEDIA> {
-    return this.mediaFacade.deleteMedia(deletedID);
+  public async deleteMedia (@Query('media_id') media_id: string, @Response() response: FastifyReply): Promise<void> {
+    const response_time: number = response.getResponseTime();
+    const deleted_media_id = await this.mediaFacade.deleteMedia(media_id);
+
+    response.
+      header('x-response-time', response_time).
+      status(HttpStatus.OK).
+      type('application/json').
+      send(deleted_media_id);
   }
 }

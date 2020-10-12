@@ -1,20 +1,20 @@
-export interface I_TW_ACCESS_TOKEN_RESPONSE {
+export interface ITwitterTokenResponse {
   oauth_token: string;
   oauth_token_secret: string;
   screen_name: string;
   user_id: string;
 }
 
-export interface I_TW_MEDIA_UPLOAD_RESPONSE {
+export interface ITwitterMediaResponse {
+  expires_after_secs?: number;
+  image?: { image_type: string; w: number; h: number };
   media_id: number;
   media_id_string: string;
   size?: number;
-  expires_after_secs?: number;
-  image?: { image_type: string; w: number; h: number };
   video?: { video_type: string };
 }
 
-export interface I_TW_ERROR_RESPONSE {
+export interface ITwitterErrorResponse {
   code: number;
   message: string;
 }

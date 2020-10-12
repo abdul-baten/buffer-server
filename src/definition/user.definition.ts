@@ -1,59 +1,60 @@
-import { E_SUBSCRIPTION_PLAN } from '@enums';
-import { REG_EX_PATTERNS } from '@utils';
-import { SchemaDefinition } from 'mongoose';
+import { ESubscriptionPlan } from '@enums';
+import { RegexPatterns } from '@utils';
+import type { SchemaDefinition } from 'mongoose';
 
 export const UserDefinition: SchemaDefinition = {
-  createdAt: {
-    type: Date,
+  user_created_at: {
     default: Date.now(),
+    type: Date
   },
-  email: {
+  user_email: {
+    // eslint-disable-next-line @typescript-eslint/naming-convention
     createIndexes: { unique: true },
     lowercase: true,
+    match: [RegexPatterns.EMAIL, 'Work email address is not valid.'],
     required: [true, 'Work email is required!'],
     trim: true,
     type: String,
-    unique: true,
-    match: [REG_EX_PATTERNS.EMAIL, 'Work email address is not valid.'],
+    unique: true
   },
-  fullName: {
+  user_full_name: {
+    match: [RegexPatterns.ALPHA_NUMERIC_WITH_SPACE, 'Full name is not valid.'],
     maxlength: 50,
     minlength: 3,
     required: [true, 'Full name is required!'],
     trim: true,
-    type: String,
-    match: [REG_EX_PATTERNS.ALPHA_NUMERIC_WITH_SPACE, 'Full name is not valid.'],
+    type: String
   },
-  password: {
-    type: String,
-    required: [true, 'Password is required!'],
-  },
-  subscription: {
-    isTrial: {
-      type: Boolean,
-      default: true,
-    },
-    subscriptionPlan: {
-      enum: [E_SUBSCRIPTION_PLAN.PROFESSIONAL, E_SUBSCRIPTION_PLAN.ADVANCED, E_SUBSCRIPTION_PLAN.AGENCY],
-      type: String,
-      trim: true,
-    },
-    subscriptionPlanAdded: {
-      type: Date,
-    },
-    subscriptionPlanEnds: {
-      type: Date,
-    },
-    trialEnds: {
-      type: Date,
-    },
-  },
-  updatedAt: {
-    type: Date,
-    default: Date.now(),
-  },
-  userSuspended: {
-    type: Boolean,
+  user_is_suspended: {
     default: false,
+    type: Boolean
   },
+  user_password: {
+    required: [true, 'Password is required!'],
+    type: String
+  },
+  user_subscription_plan: {
+    is_trial: {
+      default: true,
+      type: Boolean
+    },
+    subscription_added: {
+      type: Date
+    },
+    subscription_expires: {
+      type: Date
+    },
+    subscription_plan: {
+      enum: [ESubscriptionPlan.PROFESSIONAL, ESubscriptionPlan.ADVANCED, ESubscriptionPlan.AGENCY],
+      trim: true,
+      type: String
+    },
+    trial_ends: {
+      type: Date
+    }
+  },
+  user_updated_at: {
+    default: Date.now(),
+    type: Date
+  }
 };

@@ -1,34 +1,42 @@
-import { E_POST_STATUS, E_POST_TYPE } from '@enums';
-import { I_CONNECTION } from '@interfaces';
-import { IsArray, IsDefined, IsEnum, IsObject, IsOptional, IsString, ValidateNested } from 'class-validator';
+import { EPostStatus, EPostType } from '@enums';
+import {
+  IsArray,
+  IsDefined,
+  IsEnum,
+  IsObject,
+  IsOptional,
+  IsString,
+  ValidateNested
+} from 'class-validator';
+import type { IConnection } from '@interfaces';
 
-export class PostDTO {
+export class PostDto {
   @IsDefined()
   @IsString()
-  readonly postCaption: string;
+  readonly post_message!: string;
 
   @IsDefined()
   @IsObject({ each: true })
   @ValidateNested({ each: true })
-  readonly postConnection: Partial<I_CONNECTION>;
+  readonly post_connection!: Partial<IConnection>;
 
   @IsOptional()
   @IsArray()
-  readonly postMedia: string[];
+  readonly post_media!: string[];
 
   @IsDefined()
   @IsString()
-  readonly postScheduleDateTime: string;
+  readonly post_date_time!: string;
 
   @IsDefined()
-  @IsEnum(E_POST_STATUS)
-  readonly postStatus: E_POST_STATUS;
+  @IsEnum(EPostStatus)
+  readonly post_status!: EPostStatus;
 
   @IsDefined()
-  @IsEnum(E_POST_TYPE)
-  readonly postType: E_POST_TYPE;
+  @IsEnum(EPostType)
+  readonly post_type!: EPostType;
 
   @IsDefined()
   @IsString()
-  readonly userID: string;
+  readonly post_user_id!: string;
 }

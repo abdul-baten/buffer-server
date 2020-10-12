@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { MediaController } from './media.controller';
+import { Test, TestingModule } from '@nestjs/testing';
 
 describe('Media Controller', () => {
   let controller: MediaController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [MediaController],
+      controllers: [MediaController]
     }).compile();
 
     controller = module.get<MediaController>(MediaController);

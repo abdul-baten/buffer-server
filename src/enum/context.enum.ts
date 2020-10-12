@@ -1,3 +1,3 @@
-export enum E_CONTEXT {
-  REQUEST_LOGGING = 'request_logging',
+export enum EContext {
+  REQUEST_LOGGING = 'request_log',
 }

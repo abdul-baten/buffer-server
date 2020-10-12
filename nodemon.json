@@ -1,6 +1,18 @@
 {
-    "watch": ["src"],
-    "ext": "ts",
-    "ignore": ["src/**/*.spec.ts"],
-    "exec": "nest start"
+  "watch": [
+    "src"
+  ],
+  "ext": "ts",
+  "ignore": [
+    "src/**/*.spec.ts"
+  ],
+  "exec": "nest start",
+  "env": {
+    "DATABASE_ADAPTAR_PASSWORD": "baten@CAT2018",
+    "DATABASE_ADAPTAR_TYPE": "mongodb",
+    "DATABASE_ADAPTAR_URI": "mongodb+srv://baten:<password>@cluster0-vqjwy.mongodb.net/test?retryWrites=true&w=majority",
+    "NODE_ENV": "development",
+    "PORT": 3000,
+    "EXPIRES_IN": "60 * 60 * 24 * 7"
+  }
 }

@@ -1,4 +1,4 @@
-export interface I_FB_PAGE {
+export interface IFbPage {
   access_token: string;
   category: string;
   id: string;
@@ -6,7 +6,7 @@ export interface I_FB_PAGE {
   picture: string;
 }
 
-export interface I_FB_GROUP {
+export interface IFbGroup {
   access_token: string;
   id: string;
   name: string;

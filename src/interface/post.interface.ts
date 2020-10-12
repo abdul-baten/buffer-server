@@ -1,15 +1,15 @@
-import { Document } from 'mongoose';
-import { E_POST_STATUS, E_POST_TYPE } from '@enums';
-import { I_CONNECTION, I_MEDIA } from '@interfaces';
+import type { Document } from 'mongoose';
+import type { EPostStatus, EPostType } from '@enums';
+import type { IConnection, IMedia } from '@interfaces';
 
-export interface I_POST extends Document {
+export interface IPost extends Document {
   id: string;
-  postCaption: string;
-  postConnection: Partial<I_CONNECTION>;
-  postDate: string;
-  postMedia?: I_MEDIA['id'][];
-  postScheduleDateTime: Date;
-  postStatus: E_POST_STATUS;
-  postType: E_POST_TYPE;
-  userID: string;
+  post_connection: Partial<IConnection>;
+  post_date: string;
+  post_date_time: Date;
+  post_media?: IMedia['id'][];
+  post_message: string;
+  post_status: EPostStatus;
+  post_type: EPostType;
+  post_user_id: string;
 }

@@ -1,34 +1,75 @@
-import { ConnectionHelper, FacebookHelper, PostHelper } from '@helpers';
-import { from, Observable } from 'rxjs';
-import { I_CONNECTION, I_FB_STATUS_SUCCESS, I_POST } from '@interfaces';
+import to from 'await-to-js';
+import {
+  ConnectionHelperService,
+  FacebookHelperService,
+  LinkedInHelperService,
+  PostHelperService
+} from '@helpers';
 import { Injectable } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
-import { PostDTO } from '@dtos';
-import { E_POST_STATUS } from '@enums';
+import type { PostDto } from '@dtos';
+import type { IConnection, IFbPostPayload, IFbResponse, ILnSuccess, IPost } from '@interfaces';
 
 @Injectable()
 export class PostService {
-  constructor(
-    @InjectModel('Post') private readonly postModel: Model<I_POST>,
-    @InjectModel('Connection')
-    private readonly connectionModel: Model<I_CONNECTION>,
+  // eslint-disable-next-line max-params
+  constructor (
+    @InjectModel('Connection') private readonly connectionModel: Model<IConnection>,
+    @InjectModel('Post') private readonly postModel: Model<IPost>,
+    private readonly connectionHelperService: ConnectionHelperService,
+    private readonly facebookHelperService: FacebookHelperService,
+    private readonly linkedInHelperService: LinkedInHelperService,
+    private readonly postHelperService: PostHelperService
   ) {}
 
-  addPost(postBody: PostDTO | I_POST): Observable<I_POST> {
-    const post = new this.postModel(postBody);
-    return from(post.save());
+  public async getPosts (user_id: string): Promise<IPost[]> {
+    const [error, posts] = await to(this.postHelperService.getPostsByUserID(this.postModel, user_id));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return posts as IPost[];
   }
 
-  async getConnection(connectionID: string): Promise<I_CONNECTION> {
-    return ConnectionHelper.getConnectionsByID(this.connectionModel, connectionID);
+  public async addPost (post_dto: PostDto): Promise<IPost> {
+    const [error, post] = await to(this.postHelperService.addPost(this.postModel, post_dto as PostDto));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return post as IPost;
   }
 
-  postFacebookStatus(connectionID: string, connectionToken: string, postCaption: string, postStatus: E_POST_STATUS, postScheduleDateTime: string): Observable<I_FB_STATUS_SUCCESS> {
-    return from(FacebookHelper.postStatus(connectionID, connectionToken, postCaption, postStatus, postScheduleDateTime));
+  public async getConnection (connection_id: string): Promise<IConnection> {
+    const [error, connection] = await to(this.connectionHelperService.getConnectionByID(this.connectionModel, connection_id));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return connection as IConnection;
   }
 
-  getPosts(userID: string): Observable<I_POST[]> {
-    return PostHelper.getPostsByUserID(this.postModel, userID);
+  public async postFacebookStatus (post_payload: IFbPostPayload): Promise<IFbResponse> {
+    const [error, post] = await to(this.facebookHelperService.postStatus(post_payload));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return post as IFbResponse;
+  }
+
+  public async postLinkedinStatus (connection_id: string, post_message: string): Promise<ILnSuccess> {
+    const [error, post] = await to(this.linkedInHelperService.postStatus(connection_id, post_message));
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return post as ILnSuccess;
   }
 }

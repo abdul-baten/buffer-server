@@ -1,15 +1,15 @@
-import { Document } from 'mongoose';
-import { E_CONNECTION_STATUS, E_CONNECTION_TYPE } from '@enums';
+import type { Document } from 'mongoose';
+import type { EConnectionStatus, EConnectionType } from '@enums';
 
-export interface I_CONNECTION extends Document {
-  connectionAdded?: Date;
-  connectionCategory?: string;
-  connectionID: string;
-  connectionName: string;
-  connectionPicture: string;
-  connectionStatus: E_CONNECTION_STATUS;
-  connectionToken: string;
-  connectionType: E_CONNECTION_TYPE;
-  connectionUserID: string;
+export interface IConnection extends Document {
+  connection_added?: Date;
+  connection_category?: string;
+  connection_id: string;
+  connection_name: string;
+  connection_picture: string;
+  connection_status: EConnectionStatus;
+  connection_token: string;
+  connection_type: EConnectionType;
+  connection_user_id: string;
   id: string;
 }

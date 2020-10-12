@@ -1,50 +1,96 @@
-import { from, Observable } from 'rxjs';
-import { I_CONNECTION } from '@interfaces';
-import { Model } from 'mongoose';
+import to from 'await-to-js';
+import { ConnectionErrorCodes } from '@errors';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import type { IConnection } from '@interfaces';
+import type { Model } from 'mongoose';
 
-export class ConnectionHelper {
-  //todo: replace this method with getConnectionsByID
-  static getConnectionByID(connectionModel: Model<I_CONNECTION>, _id: string): Observable<I_CONNECTION> {
-    const connection = connectionModel
-      .findOne({ _id })
-      .lean(true)
-      .exec();
+@Injectable()
+export class ConnectionHelperService {
+  public async getConnectionByID (model: Model<IConnection>, mongo_connection_id: string): Promise<IConnection> {
+    const [error, connection] = await to(model.findOne({ _id: mongo_connection_id }).select('-__v').
+      lean(true).
+      exec());
 
-    return from(connection || {});
-  }
-
-  static async getConnectionsByID(connectionModel: Model<I_CONNECTION>, _id: string): Promise<I_CONNECTION> {
-    try {
-      const connection = await connectionModel.findOne({ _id }).lean();
-      if (!connection) {
-        throw new Error('no document found');
-      }
-      return connection;
-    } catch (error) {
-      return error;
+    if (error) {
+      throw new Error(error.message);
     }
+
+    if (!connection) {
+      throw new NotFoundException(ConnectionErrorCodes.COULD_NOT_FOUND);
+    }
+
+    return connection as IConnection;
   }
 
-  static getConnectionsByUserID(connectionModel: Model<I_CONNECTION>, connectionUserID: string): Observable<I_CONNECTION[]> {
-    const connections = connectionModel
-      .find({ connectionUserID })
-      .lean(true)
-      .exec();
+  public async getConnectionsByUserID (model: Model<IConnection>, connection_user_id: string): Promise<IConnection[]> {
+    const [error, connections] = await to<IConnection[]>(model.
+      find({ connection_user_id }).
+      select('-connection_token -__v').
+      exec());
 
-    return from(connections);
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return connections as IConnection[];
   }
 
-  static addConnection(connectionModel: Model<I_CONNECTION>, connection: I_CONNECTION): Observable<I_CONNECTION> {
-    const addedConnection = new connectionModel(connection);
-    return from(addedConnection.save());
+  public async getConnectionByIDAndUser (model: Model<IConnection>, mongo_connection_id: string, connection_user_id: string): Promise<IConnection> {
+    const [error, connection] = await to(model.
+      findOne({
+        _id: mongo_connection_id,
+        connection_user_id
+      }).
+      select('-connection_token -__v').
+      lean(true).
+      exec());
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!connection) {
+      throw new NotFoundException(ConnectionErrorCodes.COULD_NOT_FOUND);
+    }
+
+    return connection as IConnection;
   }
 
-  static deleteConnection(connectionModel: Model<I_CONNECTION>, _id: string): Observable<I_CONNECTION> {
-    const deletedConnection = connectionModel
-      .findByIdAndDelete({ _id })
-      .lean(true)
-      .exec();
+  public async addConnection (model: Model<IConnection>, connection_to_add: IConnection): Promise<IConnection> {
+    const [error, added_connection] = await to(new model(connection_to_add).save());
 
-    return from(deletedConnection);
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return added_connection as IConnection;
+  }
+
+  public async deleteConnection (model: Model<IConnection>, mongo_connection_id: string, connection_user_id: string): Promise<IConnection> {
+    let error,
+      connection;
+
+    [error, connection] = await to(model.
+      findOne({
+        _id: mongo_connection_id,
+        connection_user_id
+      }).
+      select('-__v').
+      lean(true).
+      exec());
+
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    [error] = await to(model.deleteOne({
+      _id: mongo_connection_id,
+      connection_user_id
+    }).exec());
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    return connection as IConnection;
   }
 }

@@ -1,62 +1,62 @@
 import * as jsonTransformer from 'jsonata';
-import { E_CONNECTION_TYPE } from '@enums';
-import { I_CONNECTION, I_FB_GROUP, I_FB_PAGE } from '@interfaces';
+import { EConnectionType } from '@enums';
+import type { IConnection, IFbGroup, IFbPage } from '@interfaces';
 
 export class ConnectionMapper {
-  static fbPageResponseMapper(pageInfo: Partial<I_FB_PAGE>): I_CONNECTION {
+  static fbPageResponseMapper (page_info: Partial<IFbPage>): IConnection {
     const response = `{
-        "connectionCategory": $.category,
-        "connectionID": $.id,
-        "connectionName": $.name,
-        "connectionNetwork": ${E_CONNECTION_TYPE.FACEBOOK_PAGE},
-        "connectionPicture": $.picture.data.url,
-        "connectionToken": $.access_token
+        "connection_category": $.category,
+        "connection_id": $.id,
+        "connection_name": $.name,
+        "connection_network": ${EConnectionType.FACEBOOK_PAGE},
+        "connection_picture": $.picture.data.url,
+        "connection_token": $.access_token
     }`;
 
-    return jsonTransformer(response).evaluate(pageInfo);
+    return jsonTransformer(response).evaluate(page_info);
   }
 
-  static fbGroupResponseMapper(pageInfo: I_FB_GROUP): I_CONNECTION {
+  static fbGroupResponseMapper (page_info: IFbGroup): IConnection {
     const response = `{
-        "connectionCategory": $.privacy,
-        "connectionID": $.id,
-        "connectionName": $.name,
-        "connectionNetwork": ${E_CONNECTION_TYPE.FACEBOOK_GROUP},
-        "connectionPicture": $.picture.data.url,
-        "connectionToken": $.access_token
+        "connection_category": $.privacy,
+        "connection_id": $.id,
+        "connection_name": $.name,
+        "connection_network": ${EConnectionType.FACEBOOK_GROUP},
+        "connection_picture": $.picture.data.url,
+        "connection_token": $.access_token
     }`;
 
-    return jsonTransformer(response).evaluate(pageInfo);
+    return jsonTransformer(response).evaluate(page_info);
   }
 
-  static connectionsResponseMapper(connectionInfo: I_CONNECTION): I_CONNECTION {
+  static connectionsResponseMapper (connection_info: IConnection): IConnection {
     const response = `{
       "connectionAdded": $.connectionAdded,
-      "connectionCategory": $.connectionCategory,
-      "connectionID": $.connectionID,
-      "connectionName": $.connectionName,
-      "connectionPicture": $.connectionPicture,
+      "connection_category": $.connection_category,
+      "connection_id": $.connection_id,
+      "connection_name": $.connection_name,
+      "connection_picture": $.connection_picture,
       "connectionStatus": $.connectionStatus,
-      "connectionToken": $.connectionToken,
+      "connection_token": $.connection_token,
       "connectionType": $.connectionType,
       "connectionUpdated": $.connectionUpdated,
       "connectionUserID": $.connectionUserID,
-      "id": $._id
+      "id": $.id
     }`;
 
-    return jsonTransformer(response).evaluate(connectionInfo);
+    return jsonTransformer(response).evaluate(connection_info);
   }
 
-  static instagramAccountsResponseMapper(pageInfo: Partial<I_FB_PAGE>): I_CONNECTION {
+  static instagramAccountsResponseMapper (page_info: Partial<IFbPage>): IConnection {
     const response = `{
-        "connectionCategory": $.category,
-        "connectionID": $.id,
-        "connectionName": $.username,
-        "connectionNetwork": $.connectionNetwork,
-        "connectionPicture": $.profile_picture_url,
-        "connectionToken": $.accessToken
+        "connection_category": $.category,
+        "connection_id": $.id,
+        "connection_name": $.username,
+        "connection_network": $.connection_network,
+        "connection_picture": $.profile_picture_url,
+        "connection_token": $.accessToken
     }`;
 
-    return jsonTransformer(response).evaluate(pageInfo);
+    return jsonTransformer(response).evaluate(page_info);
   }
 }

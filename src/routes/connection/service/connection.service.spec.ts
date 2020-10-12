@@ -1,12 +1,12 @@
-import { Test, TestingModule } from '@nestjs/testing';
 import { ConnectionService } from './connection.service';
+import { Test, TestingModule } from '@nestjs/testing';
 
 describe('Connection Service', () => {
   let service: ConnectionService;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      providers: [ConnectionService],
+      providers: [ConnectionService]
     }).compile();
 
     service = module.get<ConnectionService>(ConnectionService);

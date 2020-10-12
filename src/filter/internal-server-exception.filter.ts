@@ -1,28 +1,40 @@
-import * as httpContext from 'express-http-context';
-import { E_CONTEXT } from '@enums';
-import { I_ERROR } from '@interfaces';
-import { Response } from 'express';
-import { ArgumentsHost, Catch, ExceptionFilter, InternalServerErrorException } from '@nestjs/common';
+import {
+  ArgumentsHost,
+  Catch,
+  ExceptionFilter,
+  HttpStatus,
+  InternalServerErrorException
+} from '@nestjs/common';
+import { EContext } from '@enums';
+import { get, set } from 'express-http-context';
+import { parse as parseStack } from 'error-stack-parser';
+import type { FastifyReply } from 'fastify';
+import type { IError } from '@interfaces';
 
 @Catch(InternalServerErrorException)
 export class InternalServerErrorExceptionFilter implements ExceptionFilter {
-  catch(exception: InternalServerErrorException, host: ArgumentsHost) {
+  catch (exception: InternalServerErrorException, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
-    const response = ctx.getResponse<Response>();
-    const statusCode = exception.getStatus();
-    const { error: errorCode, message: errorMessage } = exception.getResponse() as any;
+    const response = ctx.getResponse<FastifyReply>();
+    const { error_details, error_code, http_code, message } = exception.getResponse() as IError;
+    const { message: error_message } = error_details;
+    const context = get(EContext.REQUEST_LOGGING);
+    const response_body = {
+      error_code,
+      http_code,
+      message
+    };
 
-    const context = httpContext.get(E_CONTEXT.REQUEST_LOGGING);
-    httpContext.set(E_CONTEXT.REQUEST_LOGGING, {
+    set(EContext.REQUEST_LOGGING, {
       ...context,
-      isError: true,
-      errorDetails: exception.getResponse(),
+      error_message,
+      error_stack: parseStack(error_details),
+      is_error: true,
+      response_body
     });
 
-    response.status(statusCode).json({
-      errorCode,
-      statusCode,
-      errorMessage,
-    } as I_ERROR);
+    response.status(HttpStatus.INTERNAL_SERVER_ERROR).send({
+      ...response_body
+    });
   }
 }

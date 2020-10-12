@@ -1,22 +1,44 @@
-import { I_USER } from '@interfaces';
-import { InternalServerErrorException } from '@nestjs/common';
-import { LoggerUtil } from '@utils';
-import { Model } from 'mongoose';
+import to from 'await-to-js';
+import { EUserErrorMessage, UserErrorCodes } from '@errors';
+import { Injectable, NotFoundException } from '@nestjs/common';
+import type { IUser } from '@interfaces';
+import type { Model } from 'mongoose';
 
-export class UserHelper {
-  static findUserByEmailAndID(userModel: Model<I_USER>, email: string, _id: string): Promise<I_USER> {
-    try {
-      return userModel
-        .findOne({ email, _id })
-        .lean()
-        .exec();
-    } catch (error) {
-      LoggerUtil.logError(error);
-      throw new InternalServerErrorException(error);
+@Injectable()
+export class UserHelperService {
+  public async findUserByEmailAndID (model: Model<IUser>, email: string, mongo_user_id: string): Promise<IUser> {
+    const [error, user] = await to(model.
+      findOne({
+        _id: mongo_user_id,
+        email
+      }).
+      lean().
+      exec());
+
+    if (error) {
+      throw new Error(error.message);
     }
+
+    if (!user) {
+      throw new NotFoundException(UserErrorCodes.COULD_NOT_FOUND);
+    }
+
+    return user as IUser;
   }
 
-  static findUserByID() {}
+  public async findUserByEmail (model: Model<IUser>, user_email: string): Promise<IUser> {
+    const [error, user] = await to(model.findOne({ user_email }).select('-__v').
+      lean(true).
+      exec());
 
-  static findUserByEmail() {}
+    if (error) {
+      throw new Error(error.message);
+    }
+
+    if (!user) {
+      throw new Error(EUserErrorMessage.COULD_NOT_FOUND);
+    }
+
+    return user as IUser;
+  }
 }

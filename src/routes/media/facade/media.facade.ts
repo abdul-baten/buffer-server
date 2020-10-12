@@ -1,67 +1,66 @@
-import { catchError, map, switchMap, tap } from 'rxjs/operators';
+import * as filesize from 'filesize';
 import { ConfigService } from '@nestjs/config';
-import { E_ERROR_MESSAGE, E_ERROR_MESSAGE_MAP } from '@enums';
-import { from, Observable } from 'rxjs';
-import { I_MEDIA, I_USER } from '@interfaces';
-import { Injectable, InternalServerErrorException, UnprocessableEntityException } from '@nestjs/common';
-import { LoggerUtil, SanitizerUtil, TokenUtil } from '@utils';
-import { MediaHelper } from '@helpers';
+import { createWriteStream, statSync } from 'fs';
+import { extname } from 'path';
+import { Injectable } from '@nestjs/common';
 import { MediaMapper } from '@mappers';
 import { MediaService } from '../service/media.service';
+import { pipeline } from 'stream';
+import { promisify } from 'util';
+import { TokenService } from '@utils';
+import type { IMedia, IUser } from '@interfaces';
 
-const filesize = require('filesize');
+const pump = promisify(pipeline);
 
 @Injectable()
 export class MediaFacade {
-  constructor(private readonly configService: ConfigService, private readonly mediaService: MediaService) {}
+  constructor (
+    private readonly configService: ConfigService,
+    private readonly mediaService: MediaService,
+    private readonly tokenService: TokenService
+  ) {}
 
-  verifyToken(authToken: string): Observable<Partial<I_USER>> {
-    return from(TokenUtil.verifyUser(authToken, this.configService));
+  public async verifyToken (auth_token: string): Promise<Partial<IUser>> {
+    const user = await this.tokenService.jwtVerify(auth_token);
+
+    return user;
   }
 
-  addMedia(authToken: string, postMedia: any): Observable<I_MEDIA> {
-    const userID$ = this.verifyToken(authToken);
+  private getFileName (media: string): string {
+    const media_name = media.split('.')[0].toLowerCase();
+    const media_ext = extname(media);
+    const date = Date.now();
 
-    const { filename: mediaName, mimetype: mediaMimeType, size } = postMedia;
-    const mediaType = mediaMimeType.split('/')[0];
-    const mediaURL = mediaName;
-    const mediaSize = filesize(size, { base: 10 });
-
-    return userID$.pipe(
-      switchMap((userInfo: I_USER) => {
-        const { _id: userID } = userInfo;
-        return this.mediaService.addMedia({
-          mediaType,
-          mediaURL,
-          mediaName,
-          mediaMimeType,
-          mediaSize,
-          userID,
-        });
-      }),
-      map((mediaInfo: I_MEDIA) => SanitizerUtil.sanitizedResponse(mediaInfo)),
-      map((mediaInfo: I_MEDIA) => MediaMapper.addMediaResponseMapper(mediaInfo)),
-      catchError((error) => {
-        LoggerUtil.logError(error);
-        throw new InternalServerErrorException(E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.COULD_NOT_ADD_MEDIA), E_ERROR_MESSAGE.COULD_NOT_ADD_MEDIA);
-      }),
-    );
+    return `${media_name}-${date}${media_ext}`;
   }
 
-  deleteMedia(deletedID: string): Observable<I_MEDIA> {
-    return this.mediaService.deleteMedia(deletedID).pipe(
-      tap((media: I_MEDIA) => {
-        MediaHelper.deleteMediaFromStorage(media.mediaName);
-      }),
-      map((mediaInfo: I_MEDIA) => SanitizerUtil.sanitizedResponse(mediaInfo)),
-      map((mediaInfo: I_MEDIA) => MediaMapper.addMediaResponseMapper(mediaInfo)),
-      catchError(error => {
-        LoggerUtil.logError(error);
-        throw new UnprocessableEntityException(
-          E_ERROR_MESSAGE_MAP.get(E_ERROR_MESSAGE.COULD_NOT_DELETE_MEDIA),
-          E_ERROR_MESSAGE.COULD_NOT_DELETE_MEDIA,
-        );
-      }),
-    );
+  public async addMedia (auth_token: string, post_media: { media_file: any; media_name: string; media_mime_type: string }): Promise<IMedia> {
+    const media_dir = this.configService.get('APP.UPLOAD_DIR');
+    const { media_file, media_name, media_mime_type } = post_media;
+    const file_name = this.getFileName(media_name);
+    const { _id: media_user_id } = await this.verifyToken(auth_token);
+
+    await pump(media_file, createWriteStream(`${media_dir}/${file_name}`));
+
+    const [media_type] = media_mime_type.split('/');
+    const media_size = filesize(statSync(`${media_dir}/${file_name}`).size);
+    const media_info = await this.mediaService.addMedia({
+      media_mime_type,
+      media_name: file_name,
+      media_size,
+      media_type,
+      media_url: file_name,
+      media_user_id
+    });
+    const added_media = MediaMapper.addMediaResponseMapper(media_info);
+
+    return added_media;
+  }
+
+  public async deleteMedia (media_id: string): Promise<IMedia> {
+    const deleted_media = await this.mediaService.deleteMedia(media_id);
+    const media = MediaMapper.addMediaResponseMapper(deleted_media);
+
+    return media;
   }
 }
