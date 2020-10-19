@@ -1,4 +1,4 @@
-import * as jsonTransformer from 'jsonata';
+import jsonTransformer from 'jsonata';
 import type { IFbPost } from '@interfaces';
 
 export class InsightMapper {

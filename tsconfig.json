@@ -1,5 +1,7 @@
 {
   "compilerOptions": {
+    "esModuleInterop": true,
+    "allowSyntheticDefaultImports": true,
     "baseUrl": "./",
     "declaration": true,
     "emitDecoratorMetadata": true,
@@ -69,7 +71,6 @@
     "extendedDiagnostics": true,
     "forceConsistentCasingInFileNames": true,
     "importHelpers": true,
-    "importsNotUsedAsValues": "error",
     "inlineSourceMap": false,
     "keyofStringsOnly": true,
     "moduleResolution": "node",

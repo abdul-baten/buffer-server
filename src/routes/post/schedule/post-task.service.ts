@@ -34,12 +34,12 @@ export class PostTaskService {
   // }
 
   // private connectionMap(post: I_POST): void {
-  //   const { connection_id, connectionType, connection_token } = post.postConnection;
+  //   const { connection_id, connection_type, connection_token } = post.postConnection;
 
   //   this.postToConnections(
   //     this,
   //     connection_id as string,
-  //     connectionType as EConnectionType,
+  //     connection_type as EConnectionType,
   //     connection_token as string,
   //     post.postType,
   //     post.postStatus,
@@ -50,7 +50,7 @@ export class PostTaskService {
   // async postToConnections(
   //   self: any,
   //   connection_id: string,
-  //   connectionType: EConnectionType,
+  //   connection_type: EConnectionType,
   //   connection_token: string,
   //   postType: EPostType,
   //   postStatus: EPostStatus,
@@ -58,7 +58,7 @@ export class PostTaskService {
   // ): Promise<void> {
   //   if (postType === EPostType.IMAGE) {
   //     if (postStatus === EPostStatus.SCHEDULED) {
-  //       switch (connectionType) {
+  //       switch (connection_type) {
   //         case EConnectionType.FACEBOOK_PAGE:
   //         case EConnectionType.FACEBOOK_GROUP:
   //           FacebookHelper.postImages(connection_id, connection_token, (postInfo as unknown) as PostDto)
@@ -72,7 +72,7 @@ export class PostTaskService {
   //       }
   //     }
   //   } else if (postType === EPostType.VIDEO) {
-  //     switch (connectionType) {
+  //     switch (connection_type) {
   //       case EConnectionType.FACEBOOK_PAGE:
   //       case EConnectionType.FACEBOOK_GROUP:
   //         FacebookHelper.postVideo(connection_id, connection_token, (postInfo as unknown) as PostDto)
@@ -86,7 +86,7 @@ export class PostTaskService {
   //     }
   //   } else {
   //     if (postStatus === EPostStatus.SCHEDULED) {
-  //       switch (connectionType) {
+  //       switch (connection_type) {
   //         case EConnectionType.FACEBOOK_PAGE:
   //         case EConnectionType.FACEBOOK_GROUP:
   //           FacebookHelper.postStatus(connection_id, connection_token, postInfo.postCaption, EPostStatus.PUBLISHED, '')

@@ -1,9 +1,9 @@
-import * as lodash from 'lodash';
 import Axios, { AxiosRequestConfig } from 'axios';
+import lodash from 'lodash';
 import { ConfigService } from '@nestjs/config';
-import { ConnectionMapper } from '@mappers';
 import { EConnectionType } from '@enums';
 import { Injectable } from '@nestjs/common';
+import { InstagramMapper } from '@mappers';
 import type { IConnection, IFbAuthResponse } from '@interfaces';
 
 @Injectable()
@@ -72,19 +72,19 @@ export class InstagramService {
 
       const mapped_account = (({
         access_token = token,
-        connection_network = EConnectionType.INSTAGRAM_BUSINESS,
+        connection_type = EConnectionType.INSTAGRAM_BUSINESS,
         id,
         profile_picture_url,
         username
       }) => ({
         access_token,
-        connection_network,
+        connection_type,
         id,
         profile_picture_url,
         username
       }))(instagram_business_account);
 
-      return ConnectionMapper.instagramAccountsResponseMapper(mapped_account);
+      return InstagramMapper.businessAccountsResponseMapper(mapped_account);
     });
 
     return pages_list;

@@ -8,9 +8,9 @@ import {
   Response
 } from '@nestjs/common';
 import { ClearCookies } from '@nestjsplus/cookies';
+import { ConfigService } from '@nestjs/config';
 import { serialize } from 'cookie';
 import { UserEnterDto, UserJoinDto } from '@dtos';
-import { ConfigService } from '@nestjs/config';
 import type { FastifyReply } from 'fastify';
 import type { IUser } from '@interfaces';
 
@@ -25,7 +25,7 @@ export class AuthController {
   async joinUser (@Body() create_user_dto: UserJoinDto, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
     const { auth_token, user_info } = await this.facade.userJoin(create_user_dto);
-    const cookie_options = this.configService.get('APP.COOKIE');
+    const cookie_options = this.configService.get('COOKIE');
 
     response.
       header('x-response-time', response_time).
@@ -39,7 +39,7 @@ export class AuthController {
   public async enterUser (@Body() user_enter_dto: UserEnterDto, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
     const { auth_token, user_info } = await this.facade.userEnter(user_enter_dto);
-    const cookie_options = this.configService.get('APP.COOKIE');
+    const cookie_options = this.configService.get('COOKIE');
 
     response.
       header('x-response-time', response_time).

@@ -6,10 +6,6 @@ export class CommonUtil {
     return method(JSON.parse);
   }
 
-  public static stringifyJson (): any {
-    return method(JSON.stringify);
-  }
-
   public static base64String (): string {
     // eslint-disable-next-line no-magic-numbers
     const bytes = randomBytes(12);

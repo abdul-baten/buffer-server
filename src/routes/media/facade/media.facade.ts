@@ -1,4 +1,4 @@
-import * as filesize from 'filesize';
+import filesize from 'filesize';
 import { ConfigService } from '@nestjs/config';
 import { createWriteStream, statSync } from 'fs';
 import { extname } from 'path';

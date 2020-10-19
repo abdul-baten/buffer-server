@@ -13,14 +13,14 @@ import { to } from 'await-to-js';
 import { TokenService } from '@utils';
 import { UserHelperService } from 'src/helper';
 import type { FastifyRequest } from 'fastify';
-import type { IUser } from '@interfaces';
+import type { IJwtToken, IUser } from '@interfaces';
 
 @Injectable()
 export class AuthGuard implements CanActivate {
   constructor (@InjectModel('User') private readonly userModel: Model<IUser>, private readonly tokenService: TokenService, private readonly userHelperService: UserHelperService) {}
 
-  private async getUserInfo (cookies: {[key: string]: string}): Promise<IUser> {
-    const [error, user_info] = await to(this.tokenService.jwtVerify(cookies.auth_token ?? ''));
+  private async getUserInfo (auth_token: string): Promise<IJwtToken> {
+    const [error, token_info] = await to(this.tokenService.jwtVerify(auth_token ?? ''));
 
     if (error) {
       throw new ForbiddenException({
@@ -28,16 +28,16 @@ export class AuthGuard implements CanActivate {
         error_details: error });
     }
 
-    return user_info as IUser;
+    return token_info as IJwtToken;
   }
 
   public async canActivate (context: ExecutionContext): Promise<boolean> {
     let error,
-      cookies,
+      cookie,
       user_info;
     const request = context.switchToHttp().getRequest() as FastifyRequest;
 
-    [error, cookies] = await to(resolve(parse(request.headers.cookie ?? '')));
+    [error, cookie] = await to(resolve(parse(request.headers.cookie ?? '')));
 
     if (error) {
       throw new ForbiddenException({
@@ -45,8 +45,10 @@ export class AuthGuard implements CanActivate {
         error_details: error });
     }
 
-    const user = await this.getUserInfo(cookies as {[key: string]: string});
-    const { user_email, _id: user_id } = user;
+    // eslint-disable-next-line no-extra-parens
+    const token_info = await this.getUserInfo((cookie as any).auth_token);
+
+    const { user_email, user_id } = token_info;
 
     [error, user_info] = await to(this.userHelperService.findUserByEmailAndID(this.userModel, user_email, user_id));
 

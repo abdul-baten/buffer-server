@@ -13,3 +13,7 @@ export interface IConnection extends Document {
   connection_user_id: string;
   id: string;
 }
+
+export interface IRedirectResponse {
+  redirect_uri: string;
+}

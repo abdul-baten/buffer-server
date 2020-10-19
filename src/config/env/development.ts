@@ -15,7 +15,7 @@ const config = {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     httpOnly: true,
     // eslint-disable-next-line @typescript-eslint/naming-convention
-    maxAge: parseInt(process.env.EXPIRES_IN as string, 10),
+    maxAge: process.env.EXPIRES_IN,
     path: '/',
     // eslint-disable-next-line @typescript-eslint/naming-convention
     sameSite: true,
@@ -37,6 +37,7 @@ const config = {
     ENCRYPTION_KEY: '{;<D.N8GzTJ)5egTW]GWx,MU%f4h&tr,',
     EXPIRATION: process.env.EXPIRES_IN,
     ISSUER: 'buffer',
+    JWT_EXPIRATION: process.env.JWT_EXPIRATION,
     PRIVATE_KEY: join(process.cwd(), 'src/cert', 'private.pem'),
     PUBLIC_KEY: join(process.cwd(), 'src/cert', 'public.pem'),
     SECRET: '&2MSBWET(bsHnz%KDyF4A9(xwQn%}9=W',
@@ -47,8 +48,10 @@ const config = {
       CLIENT_ID: '466314977585281',
       CLIENT_SECRET: '8628ebbe08dab12d34b5860df4336037',
       GRAPH_API: 'https://graph.facebook.com',
+      GROUP_API: 'https://graph.facebook.com/me/groups',
       GROUP_PARAMS: 'picture{url},name,id,privacy',
       IG_PARAMS: 'accounts{instagram_business_account{id,username,profile_picture_url}}',
+      PAGE_API: 'https://graph.facebook.com/me/accounts',
       PAGE_PARAMS: 'picture{url},name,category,id,access_token',
       SCOPE: `read_insights, publish_video, pages_show_list, ads_read, business_management,
         publish_to_groups, groups_access_member_info, pages_read_engagement, pages_manage_metadata,

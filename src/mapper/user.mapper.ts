@@ -1,4 +1,4 @@
-import * as jsonTransformer from 'jsonata';
+import jsonTransformer from 'jsonata';
 import type { IUser } from '@interfaces';
 
 export class UserMapper {

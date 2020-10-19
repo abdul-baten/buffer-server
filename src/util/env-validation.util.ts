@@ -1,4 +1,4 @@
-import * as Joi from 'joi';
+import Joi from 'joi';
 import { EAppEnvironment } from '@enums';
 import { Logger } from '@nestjs/common';
 
@@ -48,6 +48,7 @@ export class EnvValidationUtil {
         required(),
       EXPIRATION: Joi.string().required(),
       ISSUER: Joi.string().required(),
+      JWT_EXPIRATION: Joi.string().required(),
       PRIVATE_KEY: Joi.required(),
       PUBLIC_KEY: Joi.required(),
       SECRET: Joi.string().required(),
@@ -58,8 +59,10 @@ export class EnvValidationUtil {
         CLIENT_ID: Joi.string().required(),
         CLIENT_SECRET: Joi.string().required(),
         GRAPH_API: Joi.string().required(),
+        GROUP_API: Joi.string().required(),
         GROUP_PARAMS: Joi.string().required(),
         IG_PARAMS: Joi.string().required(),
+        PAGE_API: Joi.string().required(),
         PAGE_PARAMS: Joi.string().required(),
         SCOPE: Joi.string().required(),
         VIDEO_GRAPH_API: Joi.string().required()
@@ -97,8 +100,8 @@ export class EnvValidationUtil {
     });
 
     if (error || errors) {
-      Logger.error(JSON.stringify(error?.details, null, parseInt('2', 10)));
-      Logger.error(JSON.stringify(errors?.details, null, parseInt('2', 10)));
+      Logger.error(JSON.stringify(error?.details, null, Number.parseInt('2', 10)));
+      Logger.error(JSON.stringify(errors?.details, null, Number.parseInt('2', 10)));
       // eslint-disable-next-line no-process-exit
       process.exit(1);
     }

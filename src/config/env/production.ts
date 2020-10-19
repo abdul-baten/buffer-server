@@ -7,7 +7,7 @@ const config = {
     API_PREFIX: '/api/v1.0.0',
     CLIENT_UNAUTH_REDIRECT_URL: 'https://localhost:5000/enter',
     ENVIRONMENT: EAppEnvironment.PRODUCTION,
-    PORT: parseInt(process.env.PORT as string, 10),
+    PORT: Number.parseInt(process.env.PORT as string, 10),
     UPLOAD_DIR: join(process.cwd(), 'upload')
   },
   DATABASE: {

@@ -1,6 +1,6 @@
 import to from 'await-to-js';
-import { ConnectionErrorCodes } from '@errors';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { EConnectionErrorMessage } from '@errors';
+import { Injectable } from '@nestjs/common';
 import type { IConnection } from '@interfaces';
 import type { Model } from 'mongoose';
 
@@ -16,14 +16,14 @@ export class ConnectionHelperService {
     }
 
     if (!connection) {
-      throw new NotFoundException(ConnectionErrorCodes.COULD_NOT_FOUND);
+      throw new Error(EConnectionErrorMessage.COULD_NOT_FOUND);
     }
 
     return connection as IConnection;
   }
 
   public async getConnectionsByUserID (model: Model<IConnection>, connection_user_id: string): Promise<IConnection[]> {
-    const [error, connections] = await to<IConnection[]>(model.
+    const [error, connections] = await to(model.
       find({ connection_user_id }).
       select('-connection_token -__v').
       exec());
@@ -32,7 +32,7 @@ export class ConnectionHelperService {
       throw new Error(error.message);
     }
 
-    return connections as IConnection[];
+    return connections?.length ? connections as IConnection[] : [];
   }
 
   public async getConnectionByIDAndUser (model: Model<IConnection>, mongo_connection_id: string, connection_user_id: string): Promise<IConnection> {
@@ -41,7 +41,7 @@ export class ConnectionHelperService {
         _id: mongo_connection_id,
         connection_user_id
       }).
-      select('-connection_token -__v').
+      select('-__v').
       lean(true).
       exec());
 
@@ -50,7 +50,8 @@ export class ConnectionHelperService {
     }
 
     if (!connection) {
-      throw new NotFoundException(ConnectionErrorCodes.COULD_NOT_FOUND);
+      console.warn('error =========================');
+      throw new Error(EConnectionErrorMessage.COULD_NOT_FOUND);
     }
 
     return connection as IConnection;
@@ -75,7 +76,7 @@ export class ConnectionHelperService {
         _id: mongo_connection_id,
         connection_user_id
       }).
-      select('-__v').
+      select('-connection_token -__v').
       lean(true).
       exec());
 

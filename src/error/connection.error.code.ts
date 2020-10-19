@@ -1,3 +1,5 @@
+import { EConnectionErrorMessage } from './connection.error.message';
+
 export const ConnectionErrorCodes = Object.freeze({
   COULD_NOT_ADD: {
     error_code: 1501,
@@ -12,6 +14,6 @@ export const ConnectionErrorCodes = Object.freeze({
   COULD_NOT_FOUND: {
     error_code: 1500,
     http_code: 404,
-    message: 'Whoops! Connection not found with this id.'
+    message: EConnectionErrorMessage.COULD_NOT_FOUND
   }
 });

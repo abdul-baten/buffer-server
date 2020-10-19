@@ -7,16 +7,16 @@ import {
   Response,
   UseGuards
 } from '@nestjs/common';
+import { FacebookInsightFacade } from '../facade/facebook-insight.facade';
 import { FbInsightDto } from '@dtos';
-import { InsightFacade } from '../facade/insight.facade';
 import type { FastifyReply } from 'fastify';
 import type { IFbOverviewInsight, IFbPostInsight, IFbVideoInsight, IFbPerformanceInsight } from '@interfaces';
 
 @Controller('')
-export class InsightController {
-  constructor (private readonly facade: InsightFacade) {}
+export class FacebookInsightController {
+  constructor (private readonly facade: FacebookInsightFacade) {}
 
-  @Post('facebook/overview')
+  @Post('overview')
   @UseGuards(AuthGuard)
   public async overview (@Body() payload: FbInsightDto, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
@@ -29,7 +29,7 @@ export class InsightController {
       send(overview_insight);
   }
 
-  @Post('facebook/posts')
+  @Post('posts')
   @UseGuards(AuthGuard)
   public async posts (@Body() payload: FbInsightDto, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
@@ -42,7 +42,7 @@ export class InsightController {
       send(posts_insight);
   }
 
-  @Post('facebook/videos')
+  @Post('videos')
   @UseGuards(AuthGuard)
   public async videos (@Body() payload: FbInsightDto, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
@@ -55,7 +55,7 @@ export class InsightController {
       send(videos_insight);
   }
 
-  @Post('facebook/performance')
+  @Post('performance')
   @UseGuards(AuthGuard)
   public async performance (@Body() payload: FbInsightDto, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
@@ -66,18 +66,5 @@ export class InsightController {
       status(HttpStatus.OK).
       type('application/json').
       send(performance_insight);
-  }
-
-  @Post('instagram')
-  @UseGuards(AuthGuard)
-  public async instagramInsight (@Body() payload: FbInsightDto, @Response() response: FastifyReply): Promise<void> {
-    const response_time: number = response.getResponseTime();
-    const instagram_insight = await this.facade.instagramInsight(payload);
-
-    response.
-      header('x-response-time', response_time).
-      status(HttpStatus.OK).
-      type('application/json').
-      send(instagram_insight);
   }
 }

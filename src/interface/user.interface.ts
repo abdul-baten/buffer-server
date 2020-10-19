@@ -11,11 +11,11 @@ export interface ISubscriptionPlan {
 
 export interface IUser extends Document {
   id: string;
-  user_created_at: Date;
+  user_created: Date;
   user_email: string;
   user_full_name: string;
   user_is_suspended: boolean;
   user_password: string;
   user_subscription_plan: ISubscriptionPlan;
-  user_updated_at: Date;
+  user_updated: Date;
 }

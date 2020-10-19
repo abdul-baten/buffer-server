@@ -12,7 +12,9 @@ export interface IInsightChart extends IInsightTotal {
   response: number[];
 }
 
-export interface IInsightBase {
-  categories: string[];
-  id: string;
+export interface IInsightFromDbPayload {
+  insight_since: string;
+  insight_until: string;
+  insight_user_id: string;
+  insight_connection_id: string;
 }

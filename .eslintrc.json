@@ -147,7 +147,7 @@
     ],
     "max-statements": [
       "error",
-      15
+      30
     ],
     "max-statements-per-line": [
       "error",
@@ -622,6 +622,17 @@
           "PascalCase"
         ],
         "leadingUnderscore": "forbid"
+      },
+      {
+        "selector": "typeParameter",
+        "format": [
+          "PascalCase"
+        ],
+        "prefix": [
+          "T"
+        ],
+        "leadingUnderscore": "forbid",
+        "trailingUnderscore": "forbid"
       }
     ]
   }

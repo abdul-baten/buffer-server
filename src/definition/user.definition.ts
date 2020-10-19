@@ -3,7 +3,7 @@ import { RegexPatterns } from '@utils';
 import type { SchemaDefinition } from 'mongoose';
 
 export const UserDefinition: SchemaDefinition = {
-  user_created_at: {
+  user_created: {
     default: Date.now(),
     type: Date
   },
@@ -53,7 +53,7 @@ export const UserDefinition: SchemaDefinition = {
       type: Date
     }
   },
-  user_updated_at: {
+  user_updated: {
     default: Date.now(),
     type: Date
   }

@@ -1,4 +1,4 @@
-import * as jsonTransformer from 'jsonata';
+import jsonTransformer from 'jsonata';
 import type { IUser } from '@interfaces';
 
 export class AuthMapper {
@@ -12,12 +12,12 @@ export class AuthMapper {
     const response = `
     {
       "id": $._id,
-      "subscription": $.subscription,
-      "createdAt": $.createdAt,
-      "updatedAt": $.updatedAt,
-      "userSuspended": $.userSuspended,
-      "fullName": $.fullName,
-      "email": $.email
+      "user_created": $.user_created,
+      "user_email": $.user_email,
+      "user_full_name": $.user_full_name,
+      "user_is_suspended": $.user_is_suspended,
+      "user_subscription_plan": $.user_subscription_plan,
+      "user_updated": $.user_updated
     }
     `;
 

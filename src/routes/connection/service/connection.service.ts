@@ -1,12 +1,14 @@
+import safeJsonStringify from 'safe-json-stringify';
+import to from 'await-to-js';
 import { CommonUtil } from '@utils';
 import { ConnectionErrorCodes } from '@errors';
 import { ConnectionHelperService, RedisHelperService } from '@helpers';
 import { ConnectionMapper } from '@mappers';
-import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { Injectable, InternalServerErrorException, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { RedisService } from 'nestjs-redis';
-import { to } from 'await-to-js';
+import { resolve } from 'bluebird';
 import type { AddConnectionDto } from '@dtos';
 import type { IConnection } from '@interfaces';
 
@@ -34,15 +36,17 @@ export class ConnectionService {
   }
 
   public async getConnections (connection_user_id: string): Promise<IConnection[]> {
-    let error,
-      redis_response,
-      connections;
+    let connections,
+      error,
+      redis_response;
     const redis_key = `${ConnectionService.name}:${connection_user_id}`;
 
-    [error, redis_response] = await to<string[]>(this.redisHelperService.getDataList(this.redisService, redis_key));
+    [error, redis_response] = await to(this.redisHelperService.getDataList(this.redisService, redis_key));
     if (error) {
-      throw new InternalServerErrorException({ ...ConnectionErrorCodes.COULD_NOT_FOUND,
-        error_details: error });
+      throw new NotFoundException({
+        ...ConnectionErrorCodes.COULD_NOT_FOUND,
+        error_details: error
+      });
     }
 
     // eslint-disable-next-line no-extra-parens
@@ -52,7 +56,7 @@ export class ConnectionService {
 
     [error, connections] = await to(this.connectionHelperService.getConnectionsByUserID(this.connectionModel, connection_user_id));
     if (error) {
-      throw new InternalServerErrorException({
+      throw new NotFoundException({
         ...ConnectionErrorCodes.COULD_NOT_FOUND,
         error_details: error
       });
@@ -81,7 +85,7 @@ export class ConnectionService {
         error_details: error });
     }
 
-    [error] = await to(this.redisHelperService.setDataList(this.redisService, redis_key, [ConnectionMapper.connectionsResponseMapper(connection as IConnection)]));
+    [error] = await to(this.redisHelperService.setDataList(this.redisService, redis_key, [ConnectionMapper.addStoreResponseMapper(connection as IConnection)]));
     if (error) {
       throw new InternalServerErrorException({
         ...ConnectionErrorCodes.COULD_NOT_ADD,
@@ -104,8 +108,11 @@ export class ConnectionService {
         error_details: error });
     }
 
-    const stringify = CommonUtil.stringifyJson(),
-      conn = await stringify(ConnectionMapper.connectionsResponseMapper(connection as IConnection));
+    const assigned_connection = { ...connection };
+
+    // eslint-disable-next-line no-underscore-dangle
+    Object.assign(assigned_connection, { id: connection?._id });
+    const conn = await resolve(safeJsonStringify(ConnectionMapper.addStoreResponseMapper(assigned_connection as IConnection) as IConnection));
 
     [error] = await to(this.redisHelperService.deleteItemFromList(this.redisService, redis_key, conn));
     if (error) {

@@ -20,7 +20,7 @@ export class TwitterFacade {
     const profile = await JSON.parse(profile_info.response);
 
     profile.oauth_token = connection_token.toString();
-    profile.connection_network = EConnectionType.TWITTER;
+    profile.connection_type = EConnectionType.TWITTER;
 
     return TwitterMapper.twtProfileResponseMapper(profile);
   }

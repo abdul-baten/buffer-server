@@ -19,11 +19,11 @@ import type { IConnection } from '@interfaces';
 export class ConnectionController {
   constructor (private readonly facade: ConnectionFacade) {}
 
-  @Get(':user_id')
+  @Get(':connection_user_id')
   @UseGuards(AuthGuard)
-  public async getConnections (@Param('user_id') user_id: string, @Response() response: FastifyReply): Promise<void> {
+  public async getConnections (@Param('connection_user_id') connection_user_id: string, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
-    const connections: IConnection[] = await this.facade.getConnections(user_id);
+    const connections: IConnection[] = await this.facade.getConnections(connection_user_id);
 
     response.
       header('x-response-time', response_time).

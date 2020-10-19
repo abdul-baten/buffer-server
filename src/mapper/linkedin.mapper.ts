@@ -1,4 +1,4 @@
-import * as jsonTransformer from 'jsonata';
+import jsonTransformer from 'jsonata';
 import type { IConnection } from '@interfaces';
 
 export class LinkedInMapper {
@@ -7,7 +7,7 @@ export class LinkedInMapper {
         "connection_category": $.category,
         "connection_id": 'urn:li:person:' & $.id,
         "connection_name": $.localizedFirstName & ' ' & $.localizedLastName,
-        "connection_network": $.connection_network,
+        "connection_type": $.connection_type,
         "connection_picture": **.elements[0].identifiers.identifier,
         "connection_token": $.accessToken
     }`;
@@ -30,7 +30,7 @@ export class LinkedInMapper {
         "connection_category": $.connection_category,
         "connection_id": $.connection_id,
         "connection_name": $.connection_name,
-        "connection_network": $.connection_network,
+        "connection_type": $.connection_type,
         "connection_token": $.connection_token
     }`;
 

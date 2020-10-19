@@ -12,10 +12,11 @@ import { v4 as uuidv4 } from 'uuid';
 
 import type { NextFunction, Request, Response } from 'express';
 import type { NestFastifyApplication } from '@nestjs/platform-fastify';
+
 const morgan_middleware = (app: NestFastifyApplication): void => {
   const logger_service = app.get(LoggerUtilService);
 
-  app.register(require('fastify-express'));
+  app.register(require('middie'));
 
   app.use(middleware);
 
@@ -26,12 +27,12 @@ const morgan_middleware = (app: NestFastifyApplication): void => {
     next();
   });
 
-  app.use((request: Request, response: Response, next: NextFunction): void => {
+  // eslint-disable-next-line @typescript-eslint/naming-convention
+  app.use((request: Request, _response: Response, next: NextFunction): void => {
     const correlation_id = request.headers['x-correlation-id'] ?? uuidv4();
 
     // eslint-disable-next-line no-param-reassign
     request.headers['x-correlation-id'] = correlation_id;
-    response.header('x-correlation-id', correlation_id);
 
     const context = get(EContext.REQUEST_LOGGING);
 
@@ -50,14 +51,14 @@ const morgan_middleware = (app: NestFastifyApplication): void => {
       const log_details = {
         ...context,
         response_headers_sent: response.headersSent,
-        response_status: response.statusCode,
-        response_status_message: response.statusMessage
+        response_sent: response.writableEnded,
+        response_status: response.statusCode
       };
 
       if (context && !context.is_error) {
-        logger_service.logWarning(JSON.stringify(log_details, null, parseInt('2', 10)));
+        logger_service.logWarning(JSON.stringify(log_details, null, Number.parseInt('2', 10)));
       } else {
-        logger_service.logError(new Error(JSON.stringify(log_details, null, parseInt('2', 10))));
+        logger_service.logError(new Error(JSON.stringify(log_details, null, Number.parseInt('2', 10))));
       }
     });
 

@@ -11,8 +11,9 @@
     "DATABASE_ADAPTAR_PASSWORD": "baten@CAT2018",
     "DATABASE_ADAPTAR_TYPE": "mongodb",
     "DATABASE_ADAPTAR_URI": "mongodb+srv://baten:<password>@cluster0-vqjwy.mongodb.net/test?retryWrites=true&w=majority",
+    "EXPIRES_IN": 3600,
+    "JWT_EXPIRATION": "1h",
     "NODE_ENV": "development",
-    "PORT": 3000,
-    "EXPIRES_IN": "60 * 60 * 24 * 7"
+    "PORT": 3000
   }
 }

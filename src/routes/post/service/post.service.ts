@@ -23,8 +23,8 @@ export class PostService {
     private readonly postHelperService: PostHelperService
   ) {}
 
-  public async getPosts (user_id: string): Promise<IPost[]> {
-    const [error, posts] = await to(this.postHelperService.getPostsByUserID(this.postModel, user_id));
+  public async getPostsByUserID (post_user_id: string): Promise<IPost[]> {
+    const [error, posts] = await to(this.postHelperService.getPostsByUserID(this.postModel, post_user_id));
 
     if (error) {
       throw new Error(error.message);

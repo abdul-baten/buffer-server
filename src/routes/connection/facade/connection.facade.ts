@@ -8,8 +8,8 @@ import type { IConnection } from '@interfaces';
 export class ConnectionFacade {
   constructor (private readonly connectionService: ConnectionService) {}
 
-  public async getConnections (user_id: string): Promise<IConnection[]> {
-    const connections: IConnection[] = await this.connectionService.getConnections(user_id);
+  public async getConnections (connection_user_id: string): Promise<IConnection[]> {
+    const connections: IConnection[] = await this.connectionService.getConnections(connection_user_id);
     const connections_length: number = connections.length;
     const response: IConnection[] = [];
 

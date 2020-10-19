@@ -7,32 +7,33 @@ import {
   Response,
   UseGuards
 } from '@nestjs/common';
-import { FacebookService } from '../service/facebook.service';
+import { FacebookFacade } from '../facade/facebook.facade';
 import type { FastifyReply } from 'fastify';
-import type { IConnection, IFbAuthResponse } from '@interfaces';
+import type { IConnection, IRedirectResponse, IFbAuthResponse } from '@interfaces';
 
 @Controller('')
 export class FacebookController {
-  constructor (private readonly profileService: FacebookService) {}
+  constructor (private readonly facade: FacebookFacade) {}
 
   @Get('authorize')
   @UseGuards(AuthGuard)
-  public async facebookAuth (@Query('connection_type') connection_type: string, @Response() response: FastifyReply): Promise<void> {
+  public facebookAuth (@Query('connection_type') connection_type: string, @Response() response: FastifyReply): void {
     const response_time: number = response.getResponseTime();
-    const redirect_uri: string = await this.profileService.authenticateFacebook(connection_type);
+    const redirect_uri = this.facade.authenticateFacebook(connection_type);
 
     response.
       header('x-response-time', response_time).
-      status(HttpStatus.MOVED_PERMANENTLY).
-      redirect(redirect_uri);
+      status(HttpStatus.OK).
+      type('application/json').
+      send(redirect_uri as IRedirectResponse);
   }
 
   @Get('facebook-pages')
   @UseGuards(AuthGuard)
   public async getFBPages (@Query('code') code: string, @Query('connection_type') connection_type: string, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
-    const auth_response: IFbAuthResponse = await this.profileService.authorizeFacebook(code, connection_type);
-    const facebook_pages: IConnection[] = await this.profileService.getFBPages(auth_response);
+    const { access_token }: IFbAuthResponse = await this.facade.authorizeFacebook(code, connection_type);
+    const facebook_pages: IConnection[] = await this.facade.getFBPages(access_token);
 
     response.
       header('x-response-time', response_time).
@@ -45,8 +46,8 @@ export class FacebookController {
   @UseGuards(AuthGuard)
   public async getFBGroups (@Query('code') code: string, @Query('connection_type') connection_type: string, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
-    const auth_response: IFbAuthResponse = await this.profileService.authorizeFacebook(code, connection_type);
-    const facebook_groups: IConnection[] = await this.profileService.getFBGroups(auth_response);
+    const { access_token }: IFbAuthResponse = await this.facade.authorizeFacebook(code, connection_type);
+    const facebook_groups: IConnection[] = await this.facade.getFacebookGroups(access_token);
 
     response.
       header('x-response-time', response_time).

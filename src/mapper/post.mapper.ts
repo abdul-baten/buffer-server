@@ -1,4 +1,4 @@
-import * as jsonTransformer from 'jsonata';
+import jsonTransformer from 'jsonata';
 import type { IPost } from '@interfaces';
 
 export class PostMapper {

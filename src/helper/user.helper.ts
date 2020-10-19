@@ -1,18 +1,19 @@
 import to from 'await-to-js';
-import { EUserErrorMessage, UserErrorCodes } from '@errors';
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { EUserErrorMessage } from '@errors';
+import { Injectable } from '@nestjs/common';
 import type { IUser } from '@interfaces';
 import type { Model } from 'mongoose';
 
 @Injectable()
 export class UserHelperService {
-  public async findUserByEmailAndID (model: Model<IUser>, email: string, mongo_user_id: string): Promise<IUser> {
+  public async findUserByEmailAndID (model: Model<IUser>, user_email: string, user_id: string): Promise<IUser> {
     const [error, user] = await to(model.
       findOne({
-        _id: mongo_user_id,
-        email
+        _id: user_id,
+        user_email
       }).
-      lean().
+      select('-user_password -__v').
+      lean(true).
       exec());
 
     if (error) {
@@ -20,7 +21,7 @@ export class UserHelperService {
     }
 
     if (!user) {
-      throw new NotFoundException(UserErrorCodes.COULD_NOT_FOUND);
+      throw new Error(EUserErrorMessage.COULD_NOT_FOUND);
     }
 
     return user as IUser;

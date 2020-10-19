@@ -1,4 +1,4 @@
-import * as DailyRotateFile from 'winston-daily-rotate-file';
+import DailyRotateFile from 'winston-daily-rotate-file';
 import { ConfigService } from '@nestjs/config';
 import { createLogger, format, transports } from 'winston';
 import { EAppEnvironment, EContext } from '@enums';
@@ -75,7 +75,7 @@ export class LoggerUtilService extends Logger {
       // eslint-disable-next-line @typescript-eslint/naming-convention
       exitOnError: false,
       // eslint-disable-next-line @typescript-eslint/naming-convention
-      handleExceptions: true,
+      handleExceptions: false,
       level: this.configService.get('LOGGING.LABEL'),
       transports: [new transports.Console({ format: this.consoleFormat() }), this.errorLogDailyRotate(), this.combinedLogDailyRotate()]
     });

@@ -4,6 +4,7 @@
 import { hash } from 'bcrypt';
 import { HookNextFunction, Schema } from 'mongoose';
 import { UserDefinition } from '@definitions';
+import { IUser } from '@interfaces';
 
 const salt_rounds = 12;
 
@@ -15,15 +16,15 @@ export const UserSchema = new Schema(UserDefinition, {
   }
 });
 
-UserSchema.pre('save', function hook (next: HookNextFunction) {
+UserSchema.pre<IUser>('save', function hook (next: HookNextFunction) {
   if (!this.isModified('user_password')) {
     // eslint-disable-next-line callback-return
     next();
   }
 
-  hash(this.schema.obj.user_password, salt_rounds).
+  hash(this.user_password, salt_rounds).
     then((hashed_password: string) => {
-      this.schema.obj.user_password = hashed_password;
+      this.user_password = hashed_password;
       next();
     }).
     catch((error: Error) => next(error));

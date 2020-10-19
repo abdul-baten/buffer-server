@@ -1,7 +1,8 @@
 import { AuthModule } from '@routes/auth/auth.module';
 import { ConnectionModule } from '@routes/connection/connection.module';
+import { FacebookInsightModule } from '@routes/facebook-insight/facebook-insight.module';
 import { FacebookModule } from '@routes/facebook/facebook.module';
-import { InsightModule } from '@routes/insight/insight.module';
+import { InstagramInsightModule } from '@routes/instagram-insight/instagram-insight.module';
 import { InstagramModule } from '@routes/instagram/instagram.module';
 import { LinkedInModule } from '@routes/linkedin/linkedin.module';
 import { MediaModule } from './routes/media/media.module';
@@ -18,8 +19,10 @@ const routes: Routes = [
     path: 'connection' },
   { module: FacebookModule,
     path: 'facebook' },
-  { module: InsightModule,
-    path: 'insight' },
+  { module: FacebookInsightModule,
+    path: 'facebook-insight' },
+  { module: InstagramInsightModule,
+    path: 'instagram-insight' },
   { module: InstagramModule,
     path: 'instagram' },
   { module: LinkedInModule,
@@ -38,8 +41,9 @@ const routes: Routes = [
   imports: [
     AuthModule,
     ConnectionModule,
+    FacebookInsightModule,
     FacebookModule,
-    InsightModule,
+    InstagramInsightModule,
     InstagramModule,
     LinkedInModule,
     MediaModule,

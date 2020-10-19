@@ -8,8 +8,8 @@ import type { PostDto } from '@dtos';
 export class PostFacade {
   constructor (private readonly postService: PostService) {}
 
-  public async getPosts (user_id: string): Promise<IPost[]> {
-    const posts = await this.postService.getPosts(user_id);
+  public async getPostsByUserID (post_user_id: string): Promise<IPost[]> {
+    const posts = await this.postService.getPostsByUserID(post_user_id);
     const posts_length = posts.length;
     const response = [];
 
@@ -25,7 +25,7 @@ export class PostFacade {
   /*
    * Async postToConnections (
    *   connection_id: string,
-   *   connectionType: EConnectionType,
+   *   connection_type: EConnectionType,
    *   connection_token: string,
    *   postType: EPostType,
    *   postStatus: EPostStatus,
@@ -37,7 +37,7 @@ export class PostFacade {
   /*
    *   If (postType === EPostType.IMAGE) {
    *     if (postStatus === EPostStatus.PUBLISHED) {
-   *       switch (connectionType) {
+   *       switch (connection_type) {
    *       case EConnectionType.FACEBOOK_PAGE:
    *       case EConnectionType.FACEBOOK_GROUP:
    *         connectionRequest$ = from(FacebookHelper.postImages(connection_id, connection_token, postInfo)).pipe(map((response: any) => response));
@@ -65,7 +65,7 @@ export class PostFacade {
    *     }
    *   } else if (postType === EPostType.VIDEO) {
    *     if (postStatus === EPostStatus.PUBLISHED) {
-   *       switch (connectionType) {
+   *       switch (connection_type) {
    *       case EConnectionType.FACEBOOK_PAGE:
    *       case EConnectionType.FACEBOOK_GROUP:
    *         connectionRequest$ = from(FacebookHelper.postVideo(connection_id, connection_token, postInfo)).pipe(map((response: any) => response));
@@ -92,7 +92,7 @@ export class PostFacade {
    *       }
    *     }
    *   } else if (postStatus === EPostStatus.PUBLISHED) {
-   *     switch (connectionType) {
+   *     switch (connection_type) {
    *     case EConnectionType.FACEBOOK_PAGE:
    *     case EConnectionType.FACEBOOK_GROUP:
    *       connectionRequest$ = from(

@@ -1,4 +1,5 @@
-import type { IInsightBase, IInsightChart } from './insight.interface';
+import type { Document } from 'mongoose';
+import type { IInsightChart } from './insight.interface';
 
 export interface IFbInsightPayload {
   connection_id: string;
@@ -6,7 +7,8 @@ export interface IFbInsightPayload {
   until: string;
 }
 
-export interface IFbOverviewInsight extends IInsightBase {
+export interface IFbOverviewInsight extends Document {
+  categories: string[];
   page_actions_post_reactions_anger_total: IInsightChart;
   page_actions_post_reactions_haha_total: IInsightChart;
   page_actions_post_reactions_like_total: IInsightChart;
@@ -24,15 +26,9 @@ export interface IFbOverviewInsight extends IInsightBase {
 
 export interface IFbPost {
   attachment: string;
-  created_time: number;
+  created_time: Date;
   hash_tags: string[];
   id: string;
-  status: string;
-  total_comments: number;
-  total_likes: number;
-  total_reactions: number;
-  total_shares: number;
-  url: string;
   insights: [
     {
       engaged_fans: number;
@@ -45,9 +41,16 @@ export interface IFbPost {
       post_reach: number;
     },
   ];
+  status: string;
+  total_comments: number;
+  total_likes: number;
+  total_reactions: number;
+  total_shares: number;
+  url: string;
 }
 
-export interface IFbPostInsight extends IInsightBase {
+export interface IFbPostInsight extends Document {
+  categories: string[];
   engaged_fans: number[];
   engaged_users: number[];
   hash_tags: number;
@@ -62,7 +65,8 @@ export interface IFbPostInsight extends IInsightBase {
   total_shares: number[];
 }
 
-export interface IFbVideoInsight extends IInsightBase {
+export interface IFbVideoInsight extends Document {
+  categories: string[];
   page_video_complete_views_30s: IInsightChart;
   page_video_complete_views_30s_autoplayed: IInsightChart;
   page_video_complete_views_30s_click_to_play: IInsightChart;
@@ -86,7 +90,8 @@ export interface IFbVideoInsight extends IInsightBase {
   page_video_views_unique: IInsightChart;
 }
 
-export interface IFbPerformanceInsight extends IInsightBase {
+export interface IFbPerformanceInsight extends Document {
+  categories: string[];
   page_call_phone_clicks_logged_in_unique: IInsightChart;
   page_get_directions_clicks_logged_in_unique: IInsightChart;
   page_tab_views_login_top: IInsightChart;

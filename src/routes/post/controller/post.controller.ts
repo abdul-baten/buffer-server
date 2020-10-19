@@ -18,11 +18,11 @@ import type { IPost } from '@interfaces';
 export class PostController {
   constructor (private readonly facade: PostFacade) {}
 
-  @Get(':user_id')
+  @Get(':post_user_id')
   @UseGuards(AuthGuard)
-  public async getPosts (@Param('user_id') user_id: string, @Response() response: FastifyReply): Promise<void> {
+  public async getPostsByUserID (@Param('post_user_id') post_user_id: string, @Response() response: FastifyReply): Promise<void> {
     const response_time: number = response.getResponseTime();
-    const posts: IPost[] = await this.facade.getPosts(user_id);
+    const posts: IPost[] = await this.facade.getPostsByUserID(post_user_id);
 
     response.
       header('x-response-time', response_time).

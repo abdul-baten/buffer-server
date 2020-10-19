@@ -3,7 +3,6 @@ import {
   Catch,
   ExceptionFilter,
   HttpStatus,
-  Logger,
   NotFoundException
 } from '@nestjs/common';
 import { EContext } from '@enums';
@@ -20,8 +19,6 @@ export class NotFoundExceptionFilter implements ExceptionFilter {
     const { error_details, error_code, http_code, message } = exception.getResponse() as IError;
     const { message: error_message } = error_details;
     const context = get(EContext.REQUEST_LOGGING);
-
-    Logger.error(exception.getResponse());
 
     set(EContext.REQUEST_LOGGING, {
       ...context,

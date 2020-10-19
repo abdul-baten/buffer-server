@@ -6,6 +6,10 @@ export interface IFbPage {
   picture: string;
 }
 
+export interface IFbCommonResponse<T> {
+  data: [T]
+}
+
 export interface IFbGroup {
   access_token: string;
   id: string;
@@ -13,3 +17,4 @@ export interface IFbGroup {
   picture: string;
   privacy: string;
 }
+

@@ -1,5 +1,5 @@
+import safeJsonStringify from 'safe-json-stringify';
 import to from 'await-to-js';
-import { CommonUtil } from '@utils';
 import { Injectable } from '@nestjs/common';
 import type { RedisService } from 'nestjs-redis';
 
@@ -8,7 +8,7 @@ export class RedisHelperService {
   public async getData (redis_client: RedisService, key: string): Promise<string | null> {
     const redis_key_exists = await redis_client.getClient().exists(key);
 
-    if (redis_key_exists) {
+    if (!redis_key_exists) {
       return null;
     }
 
@@ -18,16 +18,19 @@ export class RedisHelperService {
   }
 
   public async setData (redis_client: RedisService, key: string, value: string): Promise<void> {
-    await redis_client.getClient().set(key, value);
+    const [error] = await to(redis_client.getClient().set(key, value));
+
+    if (error) {
+      throw new Error(error.message);
+    }
   }
 
   public async setDataList (redis_client: RedisService, key: string, entries: any[]): Promise<void> {
     const entries_lists = [];
     const entries_length = entries.length;
-    const stringify = CommonUtil.stringifyJson();
 
     for (let index = 0; index < entries_length; index += 1) {
-      entries_lists.push(stringify(entries[index]));
+      entries_lists.push(safeJsonStringify(entries[index]));
     }
 
     const entries_to_store = await Promise.all(entries_lists);

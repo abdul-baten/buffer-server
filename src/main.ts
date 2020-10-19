@@ -15,11 +15,11 @@ import {
   UnprocessableEntityExceptionFilter,
   ValidationExceptionFilter
 } from '@filters';
+import { SignalConstants } from 'os';
 
 const HandleGlobalProcess = () => {
-  process.on('uncaughtException', (error_details) => {
-    Logger.error({ error_details,
-      error_type: 'uncaughtException' });
+  process.on('uncaughtException', (error_details: Error) => {
+    console.warn('uncaughtException', error_details);
   });
 
   process.on('unhandledRejection', (error_details) => {
@@ -27,7 +27,7 @@ const HandleGlobalProcess = () => {
       error_type: 'unhandledRejection' });
   });
 
-  process.on('SIGINT', (error_details) => {
+  process.on('SIGINT', (error_details: SignalConstants) => {
     Logger.error({ error_details,
       error_type: 'SIGINT' });
   });
@@ -51,10 +51,6 @@ const HandleAppSettings = async (app: NestFastifyApplication): Promise<void> => 
   );
 
   app.enableShutdownHooks();
-  app.enableCors({
-    credentials: true,
-    origin: true
-  });
 
   await app.listen(port);
 };
@@ -77,9 +73,17 @@ const bootstrap = async (): Promise<void> => {
   const app: NestFastifyApplication = await NestFactory.create<NestFastifyApplication>(AppModule, fastify_adaptar, {
     // eslint-disable-next-line @typescript-eslint/naming-convention
     httpsOptions: {
+      ca: cert,
       cert,
-      key
+      key,
+      // eslint-disable-next-line @typescript-eslint/naming-convention
+      rejectUnauthorized: true
     }
+  });
+
+  app.enableCors({
+    credentials: true,
+    origin: true
   });
 
   try {
